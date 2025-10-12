@@ -1,0 +1,290 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Igreja Batista IBFAV</title>
+  <link rel="stylesheet" href="style.css">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
+  <!-- Verificar se scripts estão na ordem correta -->
+  <script src="https://www.gstatic.com/firebasejs/10.12.4/firebase-app.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/10.12.4/firebase-firestore.js"></script>
+</head>
+
+<body class="index">
+  <!-- HEADER -->
+  <div class="header">
+    <h2> Igreja Batista Fonte de Água Viva </h2>
+    <h1> IBFAV - Nilópolis/RJ</h1>
+  </div>
+
+  <!-- DIAS DE CULTO -->
+  <div class="section dias-de-culto">
+    <h2><i class="fas fa-calendar-alt"></i> Dias de Culto</h2>
+    <ul>
+      <li><i class="fas fa-book-open"></i> Quarta – 19:30h às 21:30h | Culto de Ensino</li>
+      <li><i class="fas fa-graduation-cap"></i> Domingo – 9h às 11h | Escola Bíblica</li>
+      <li><i class="fas fa-heart"></i> Domingo – 18h às 20h | Culto da Família</li>
+    </ul>
+  </div>
+
+  <div class="endereco">
+    <i class="fas fa-map-marker-alt"></i> Endereço: Tv. Natividade, 07 - Novo Horizonte, Nilópolis - RJ
+  </div>
+
+  <!-- REDES SOCIAIS -->
+  <div class="section redes-sociais">
+    <h2><i class="fas fa-share-alt"></i> Redes Sociais</h2>
+    <nav>
+      <a href="https://www.facebook.com/ibfav" target="_blank">
+        <i class="fab fa-facebook"></i> Facebook
+      </a>
+      <a href="https://instagram.com/ibfavnilopolis" target="_blank">
+        <i class="fab fa-instagram"></i> Instagram
+      </a>
+      <a href="https://www.youtube.com/@IgrejabatistafontedeaguavivaIb" target="_blank">
+        <i class="fab fa-youtube"></i> YouTube
+      </a>
+      <a href="https://wa.me/5521992415936" target="_blank">
+        <i class="fab fa-whatsapp"></i> WhatsApp
+      </a>
+    </nav>
+  </div>
+
+  <!-- AGENDA -->
+  <div class="section">
+    <h2><i class="fas fa-calendar-check"></i> Agenda de Eventos</h2>
+    <ul id="agenda" class="agenda-list">
+      <div class="loading" id="agenda-loading">
+        <div class="spinner"></div>
+        <p>Carregando eventos...</p>
+      </div>
+    </ul>
+  </div>
+
+  <!-- GALERIA -->
+  <div class="section">
+    <h2><i class="fas fa-images"></i> Galeria de Fotos</h2>
+    <div id="galeria" class="galeria-grid">
+      <div class="loading" id="galeria-loading">
+        <div class="spinner"></div>
+        <p>Carregando fotos...</p>
+      </div>
+    </div>
+  </div>
+
+  <!-- FORMULÁRIO DE CONTATO -->
+  <div class="section">
+    <div class="formulario">
+      <h2><i class="fas fa-envelope"></i> Entre em Contato</h2>
+      <!-- <form id="form-contato" data-netlify="true" method="POST" action="/">
+        <input type="hidden" name="form-name" value="contato" /> -->
+      <form id="form-contato" data-netlify="true" action="https://formsubmit.co/igrejabatistafontedeaguavivaib@gmail.com" method="POST">
+        <input type="text" name="nome" placeholder="Seu nome" required>
+        <input type="email" name="email" placeholder="Seu e-mail" required>
+        <textarea name="mensagem" placeholder="Sua mensagem" rows="5" required></textarea>
+
+        <!-- Configurações FormSubmit -->
+        <input type="hidden" name="_subject" value="📨 Novo contato via site IBFAV">
+        <input type="hidden" name="_captcha" value="false">
+        <input type="hidden" name="_next" value="https://ibfav-nilopolis-rj.netlify.app/obrigado.html">
+        <input type="hidden" name="_error" value="https://ibfav-nilopolis-rj.netlify.app/erro.html">
+
+        <button type="submit">
+          <i class="fas fa-paper-plane"></i> Enviar Mensagem
+        </button>
+      </form>
+    </div>
+  </div>
+
+  <!-- FOOTER -->
+  <footer>
+    <p><i class="fas fa-user-tie"></i> Pastor Carlos Henrique | © 2025 Igreja Batista IBFAV</p>
+    <p style="margin-top: 10px; font-size: 0.9em; opacity: 0.8;">
+      <i class="fas fa-heart" style="color: #ff6b6b;"></i> Desenvolvido com amor para a família IBFAV
+    </p>
+  </footer>
+
+  <!-- Link para Painel Admin -->
+  <a href="admin.html" class="admin-link" title="Painel Administrativo">
+    <i class="fas fa-cog"></i>
+  </a>
+
+  <!-- Modal para imagens -->
+  <div id="imageModal" class="modal">
+    <span class="close">&times;</span>
+    <img class="modal-content" id="modalImage">
+  </div>
+
+  <!-- Firebase SDK -->
+  
+  <script>
+    // Configuração do Firebase
+    const firebaseConfig = {
+      apiKey: "AIzaSyC0CY0Ds3tARkQFSOAOY8aVMnoFvDbu9Rs",
+      authDomain: "ibfav-c9d00.firebaseapp.com",
+      projectId: "ibfav-c9d00",
+      storageBucket: "ibfav-c9d00.firebasestorage.app",
+      messagingSenderId: "666092929823",
+      appId: "1:666092929823:web:c17194e606d41da397662a"
+    };
+
+
+
+    // Inicializar Firebase
+    const app = firebase.initializeApp(firebaseConfig);
+    const db = firebase.firestore();
+
+    // Carregar agenda
+    async function loadAgenda() {
+      const agendaContainer = document.getElementById('agenda');
+
+      try {
+        const snapshot = await db.collection('events')
+          .where('date', '>=', new Date().toISOString().split('T')[0])
+          .orderBy('date', 'asc')
+          .limit(10)
+          .get();
+
+        document.getElementById('agenda-loading').style.display = 'none';
+
+        if (snapshot.empty) {
+          agendaContainer.innerHTML = `
+            <div class="empty-state">
+              <i class="fas fa-calendar-times"></i>
+              <h3>Nenhum evento próximo</h3>
+              <p>Fique ligado! Novos eventos serão anunciados em breve.</p>
+            </div>
+          `;
+          return;
+        }
+
+        agendaContainer.innerHTML = '';
+
+        snapshot.forEach(doc => {
+          const data = doc.data();
+          const eventDate = new Date(data.date + 'T' + data.time);
+          const isToday = new Date().toDateString() === eventDate.toDateString();
+
+          const eventItem = document.createElement('li');
+          eventItem.className = 'agenda-item';
+          eventItem.innerHTML = `
+            <h3>${data.title} ${isToday ? '<span style="color: #ff6b6b;">• HOJE</span>' : ''}</h3>
+            <div class="date-time">
+              <i class="fas fa-calendar"></i> ${eventDate.toLocaleDateString('pt-BR')} 
+              <i class="fas fa-clock"></i> ${data.time}
+            </div>
+            ${data.location ? `<p><i class="fas fa-map-marker-alt"></i> ${data.location}</p>` : ''}
+            ${data.description ? `<p><i class="fas fa-info-circle"></i> ${data.description}</p>` : ''}
+          `;
+          agendaContainer.appendChild(eventItem);
+        });
+
+      } catch (error) {
+        console.error('Erro ao carregar agenda:', error);
+        document.getElementById('agenda-loading').style.display = 'none';
+        agendaContainer.innerHTML = `
+          <div class="empty-state">
+            <i class="fas fa-exclamation-triangle"></i>
+            <h3>Erro ao carregar eventos</h3>
+            <p>Tente recarregar a página.</p>
+          </div>
+        `;
+      }
+    }
+
+    // Carregar galeria
+    async function loadGaleria() {
+      const galeriaContainer = document.getElementById('galeria');
+
+      try {
+        const snapshot = await db.collection('photos')
+          .orderBy('timestamp', 'desc')
+          .limit(20)
+          .get();
+
+        document.getElementById('galeria-loading').style.display = 'none';
+
+        if (snapshot.empty) {
+          galeriaContainer.innerHTML = `
+            <div class="empty-state">
+              <i class="fas fa-image"></i>
+              <h3>Nenhuma foto disponível</h3>
+              <p>Em breve teremos fotos dos nossos momentos especiais!</p>
+            </div>
+          `;
+          return;
+        }
+
+        galeriaContainer.innerHTML = '';
+
+        snapshot.forEach(doc => {
+          const data = doc.data();
+          const img = document.createElement('img');
+          img.src = data.url;
+          img.alt = data.description || 'Foto da igreja';
+          img.title = data.description || '';
+          img.onclick = () => openModal(data.url);
+          galeriaContainer.appendChild(img);
+        });
+
+      } catch (error) {
+        console.error('Erro ao carregar galeria:', error);
+        document.getElementById('galeria-loading').style.display = 'none';
+        galeriaContainer.innerHTML = `
+          <div class="empty-state">
+            <i class="fas fa-exclamation-triangle"></i>
+            <h3>Erro ao carregar fotos</h3>
+            <p>Tente recarregar a página.</p>
+          </div>
+        `;
+      }
+    }
+
+    // Modal para imagens
+    function openModal(imageSrc) {
+      const modal = document.getElementById('imageModal');
+      const modalImg = document.getElementById('modalImage');
+      modal.style.display = 'block';
+      modalImg.src = imageSrc;
+    }
+
+    // Fechar modal
+    document.querySelector('.close').onclick = function () {
+      document.getElementById('imageModal').style.display = 'none';
+    }
+
+    // Fechar modal clicando fora da imagem
+    document.getElementById('imageModal').onclick = function (e) {
+      if (e.target === this) {
+        this.style.display = 'none';
+      }
+    }
+
+    // Limpar formulário após envio
+    document.getElementById("form-contato").addEventListener("submit", function () {
+      setTimeout(() => this.reset(), 1000);
+    });
+
+    // Carregar dados quando a página carregar
+    document.addEventListener('DOMContentLoaded', function () {
+      loadAgenda();
+      loadGaleria();
+    });
+
+    // Efeito de parallax suave no scroll
+    window.addEventListener('scroll', function () {
+      const scrolled = window.pageYOffset;
+      const sections = document.querySelectorAll('.section');
+
+      sections.forEach((section, index) => {
+        const rate = scrolled * -0.3;
+        section.style.transform = `translateY(${rate}px)`;
+      });
+    });
+  </script>
+
+</body>
+
+</html>
