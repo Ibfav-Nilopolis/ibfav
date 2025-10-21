@@ -7,9 +7,10 @@
   <title>Igreja Batista IBFAV</title>
   <link rel="stylesheet" href="style.css">
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
-  <!-- Verificar se scripts estão na ordem correta -->
-  <script src="https://www.gstatic.com/firebasejs/10.12.4/firebase-app.js"></script>
-  <script src="https://www.gstatic.com/firebasejs/10.12.4/firebase-firestore.js"></script>
+  
+  <!-- ✅ SCRIPTS FIREBASE CORRETOS (VERSÃO COMPAT) -->
+  <script src="https://www.gstatic.com/firebasejs/10.12.4/firebase-app-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/10.12.4/firebase-firestore-compat.js"></script>
 </head>
 
 <body class="index">
@@ -78,9 +79,7 @@
   <div class="section">
     <div class="formulario">
       <h2><i class="fas fa-envelope"></i> Entre em Contato</h2>
-      <!-- <form id="form-contato" data-netlify="true" method="POST" action="/">
-        <input type="hidden" name="form-name" value="contato" /> -->
-      <form id="form-contato" data-netlify="true" action="https://formsubmit.co/igrejabatistafontedeaguavivaib@gmail.com" method="POST">
+      <form id="form-contato" action="https://formsubmit.co/igrejabatistafontedeaguavivaib@gmail.com" method="POST">
         <input type="text" name="nome" placeholder="Seu nome" required>
         <input type="email" name="email" placeholder="Seu e-mail" required>
         <textarea name="mensagem" placeholder="Sua mensagem" rows="5" required></textarea>
@@ -117,37 +116,57 @@
     <img class="modal-content" id="modalImage">
   </div>
 
-  <!-- Firebase SDK -->
-  
   <script>
+    console.log('🔥 Verificando Firebase...');
+    
+    // Verificar se Firebase foi carregado
+    if (typeof firebase === 'undefined') {
+      console.error('❌ Firebase não carregado!');
+      alert('Erro ao carregar Firebase. Verifique sua conexão.');
+    } else {
+      console.log('✅ Firebase carregado com sucesso');
+    }
+
     // Configuração do Firebase
     const firebaseConfig = {
       apiKey: "AIzaSyC0CY0Ds3tARkQFSOAOY8aVMnoFvDbu9Rs",
       authDomain: "ibfav-c9d00.firebaseapp.com",
       projectId: "ibfav-c9d00",
-      storageBucket: "ibfav-c9d00.firebasestorage.app",
+      storageBucket: "ibfav-c9d00.appspot.com",
       messagingSenderId: "666092929823",
       appId: "1:666092929823:web:c17194e606d41da397662a"
     };
 
+    let app, db;
 
-
-    // Inicializar Firebase
-    const app = firebase.initializeApp(firebaseConfig);
-    const db = firebase.firestore();
+    try {
+      // Inicializar Firebase
+      app = firebase.initializeApp(firebaseConfig);
+      db = firebase.firestore();
+      console.log('✅ Firebase inicializado:', app.name);
+      console.log('✅ Firestore conectado');
+    } catch (error) {
+      console.error('❌ Erro ao inicializar Firebase:', error);
+    }
 
     // Carregar agenda
     async function loadAgenda() {
+      console.log('📅 Carregando agenda...');
       const agendaContainer = document.getElementById('agenda');
 
       try {
+        const today = new Date().toISOString().split('T')[0];
+        console.log('Data de hoje:', today);
+
         const snapshot = await db.collection('events')
-          .where('date', '>=', new Date().toISOString().split('T')[0])
+          .where('date', '>=', today)
           .orderBy('date', 'asc')
           .limit(10)
           .get();
 
         document.getElementById('agenda-loading').style.display = 'none';
+
+        console.log(`✅ ${snapshot.docs.length} evento(s) encontrado(s)`);
 
         if (snapshot.empty) {
           agendaContainer.innerHTML = `
@@ -182,13 +201,13 @@
         });
 
       } catch (error) {
-        console.error('Erro ao carregar agenda:', error);
+        console.error('❌ Erro ao carregar agenda:', error);
         document.getElementById('agenda-loading').style.display = 'none';
         agendaContainer.innerHTML = `
           <div class="empty-state">
             <i class="fas fa-exclamation-triangle"></i>
             <h3>Erro ao carregar eventos</h3>
-            <p>Tente recarregar a página.</p>
+            <p>${error.message}</p>
           </div>
         `;
       }
@@ -196,6 +215,7 @@
 
     // Carregar galeria
     async function loadGaleria() {
+      console.log('📸 Carregando galeria...');
       const galeriaContainer = document.getElementById('galeria');
 
       try {
@@ -205,6 +225,8 @@
           .get();
 
         document.getElementById('galeria-loading').style.display = 'none';
+
+        console.log(`✅ ${snapshot.docs.length} foto(s) encontrada(s)`);
 
         if (snapshot.empty) {
           galeriaContainer.innerHTML = `
@@ -230,13 +252,13 @@
         });
 
       } catch (error) {
-        console.error('Erro ao carregar galeria:', error);
+        console.error('❌ Erro ao carregar galeria:', error);
         document.getElementById('galeria-loading').style.display = 'none';
         galeriaContainer.innerHTML = `
           <div class="empty-state">
             <i class="fas fa-exclamation-triangle"></i>
             <h3>Erro ao carregar fotos</h3>
-            <p>Tente recarregar a página.</p>
+            <p>${error.message}</p>
           </div>
         `;
       }
@@ -269,6 +291,7 @@
 
     // Carregar dados quando a página carregar
     document.addEventListener('DOMContentLoaded', function () {
+      console.log('🚀 Página carregada, iniciando...');
       loadAgenda();
       loadGaleria();
     });
@@ -283,6 +306,8 @@
         section.style.transform = `translateY(${rate}px)`;
       });
     });
+
+    console.log('✅ Script carregado completamente');
   </script>
 
 </body>

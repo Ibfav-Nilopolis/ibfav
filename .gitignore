@@ -10,6 +10,7 @@ firebase.json.txt
 
 # Firebase cache
 .firebase/
+firebase-key.json
 
 # Firebase config
 
@@ -21,6 +22,7 @@ firebase.json.txt
 dados.txt
 login.txt
 users.txt
+public
 
 # Runtime data
 pids

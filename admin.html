@@ -7,10 +7,11 @@
     <title>Painel Admin - IBFAV</title>
     <link rel="stylesheet" href="style.css">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
-    <!-- Verificar se scripts estão na ordem correta -->
-    <script src="https://www.gstatic.com/firebasejs/10.12.4/firebase-app.js"></script>
-    <script src="https://www.gstatic.com/firebasejs/10.12.4/firebase-firestore.js"></script>
-    <script src="https://www.gstatic.com/firebasejs/10.12.4/firebase-storage.js"></script>
+    
+    <!-- ✅ SCRIPTS FIREBASE CORRETOS (VERSÃO COMPAT) -->
+    <script src="https://www.gstatic.com/firebasejs/10.12.4/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/10.12.4/firebase-firestore-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/10.12.4/firebase-storage-compat.js"></script>
 </head>
 
 <body class="admin">
@@ -26,6 +27,7 @@
             <div class="form-group">
                 <label for="admin-password">Senha de Administrador:</label>
                 <input type="password" id="admin-password" placeholder="Digite a senha">
+                <!-- <small style="display: block; margin-top: 5px; color: #666;">Senha: ibfav2025admin</small> -->
             </div>
             <button class="btn btn-primary" onclick="login()">
                 <i class="fas fa-sign-in-alt"></i> Entrar
@@ -33,22 +35,22 @@
             <div id="login-error" class="error-message" style="display: none;">
                 Senha incorreta. Tente novamente.
             </div>
-            <button class="logout-btn" onclick="voltarPagina()">
-                <i class="fas fa-sign-out-alt"></i> Sair
+            <button class="btn btn-secondary" onclick="voltarPagina()" style="margin-top: 15px;">
+                <i class="fas fa-arrow-left"></i> Voltar ao Site
             </button>
         </div>
 
         <!-- Painel Administrativo -->
-        <div class="admin-panel" id="admin-panel">
+        <div class="admin-panel" id="admin-panel" style="display: none;">
             <button class="logout-btn" onclick="logout()">
                 <i class="fas fa-sign-out-alt"></i> Sair
             </button>
 
             <div class="tabs">
-                <button class="tab-btn active" onclick="switchTab('photos')">
+                <button class="tab-btn active" onclick="switchTab(event, 'photos')">
                     <i class="fas fa-images"></i> Gerenciar Fotos
                 </button>
-                <button class="tab-btn" onclick="switchTab('events')">
+                <button class="tab-btn" onclick="switchTab(event, 'events')">
                     <i class="fas fa-calendar-alt"></i> Gerenciar Agenda
                 </button>
             </div>
@@ -80,13 +82,15 @@
                     </button>
                 </form>
 
-                <div class="loading" id="photo-loading">
+                <div class="loading" id="photo-loading" style="display: none;">
                     <div class="spinner"></div>
                     <p>Enviando fotos...</p>
                 </div>
 
                 <h3 style="margin-top: 40px;"><i class="fas fa-photo-video"></i> Fotos Publicadas</h3>
-                <div class="items-grid" id="photos-grid"></div>
+                <div class="items-grid" id="photos-grid">
+                    <p style="text-align: center; color: #666;">Carregando...</p>
+                </div>
             </div>
 
             <!-- Aba de Eventos -->
@@ -116,7 +120,8 @@
 
                     <div class="form-group">
                         <label for="event-location">Local:</label>
-                        <input type="text" id="event-location" placeholder="Local do evento">
+                        <input type="text" id="event-location" placeholder="Local do evento" 
+                            value="Tv. Natividade, 07 - Novo Horizonte, Nilópolis - RJ">
                     </div>
 
                     <button type="submit" class="btn btn-success">
@@ -124,32 +129,39 @@
                     </button>
                 </form>
 
-                <div class="loading" id="event-loading">
+                <div class="loading" id="event-loading" style="display: none;">
                     <div class="spinner"></div>
                     <p>Salvando evento...</p>
                 </div>
 
                 <h3 style="margin-top: 40px;"><i class="fas fa-list"></i> Eventos Cadastrados</h3>
-                <div class="items-grid" id="events-grid"></div>
+                <div class="items-grid" id="events-grid">
+                    <p style="text-align: center; color: #666;">Carregando...</p>
+                </div>
             </div>
         </div>
     </div>
 
-    <!-- Firebase SDK -->
-    
     <script>
-        // Configuração do Firebase (mesma do site principal)
+        console.log('🔥 Iniciando painel administrativo...');
+
+        // Verificar se Firebase foi carregado
+        if (typeof firebase === 'undefined') {
+            console.error('❌ Firebase não carregado!');
+            alert('ERRO: Firebase não foi carregado. Verifique sua conexão com a internet.');
+        } else {
+            console.log('✅ Firebase carregado com sucesso');
+        }
+
+        // Configuração do Firebase
         const firebaseConfig = {
             apiKey: "AIzaSyC0CY0Ds3tARkQFSOAOY8aVMnoFvDbu9Rs",
             authDomain: "ibfav-c9d00.firebaseapp.com",
             projectId: "ibfav-c9d00",
-            storageBucket: "ibfav-c9d00.firebasestorage.app",
-            // storageBucket: "ibfav-c9d00.appspot.com",
+            storageBucket: "ibfav-c9d00.appspot.com",
             messagingSenderId: "666092929823",
             appId: "1:666092929823:web:c17194e606d41da397662a"
         };
-
-        // Inicializar Firebase
 
         let app, db, storage;
 
@@ -158,33 +170,41 @@
             app = firebase.initializeApp(firebaseConfig);
             db = firebase.firestore();
             storage = firebase.storage();
+            console.log('✅ Firebase inicializado:', app.name);
+            console.log('✅ Firestore conectado');
+            console.log('✅ Storage conectado');
         } catch (error) {
-            console.error("Erro ao inicializar Firebase:", error);
+            console.error('❌ Erro ao inicializar Firebase:', error);
+            alert('Erro ao inicializar Firebase: ' + error.message);
         }
 
-        // const app = firebase.initializeApp(firebaseConfig);
-        // const db = firebase.firestore();
-        // const storage = firebase.storage();
-
-        // Senha de administrador (em produção, use autenticação mais segura)
+        // Senha de administrador
         const ADMIN_PASSWORD = 'ibfav2025admin';
+        console.log('✅ Senha configurada');
 
         // Estado da aplicação
-        // let isAuthenticated = false;
+        let isAuthenticated = false;
 
         // Funções de autenticação
         function login() {
+            console.log('🔐 Tentando fazer login...');
             const password = document.getElementById('admin-password').value;
             const errorDiv = document.getElementById('login-error');
 
+            console.log('Senha digitada:', password.length, 'caracteres');
+
             if (password === ADMIN_PASSWORD) {
+                console.log('✅ Login bem-sucedido!');
                 isAuthenticated = true;
                 document.getElementById('auth-section').style.display = 'none';
                 document.getElementById('admin-panel').style.display = 'block';
+                errorDiv.style.display = 'none';
+                
+                // Carregar dados
                 loadPhotos();
                 loadEvents();
-                errorDiv.style.display = 'none';
             } else {
+                console.log('❌ Senha incorreta');
                 errorDiv.style.display = 'block';
                 setTimeout(() => {
                     errorDiv.style.display = 'none';
@@ -193,15 +213,16 @@
         }
 
         function logout() {
+            console.log('🚪 Fazendo logout...');
             isAuthenticated = false;
             document.getElementById('auth-section').style.display = 'block';
             document.getElementById('admin-panel').style.display = 'none';
             document.getElementById('admin-password').value = '';
         }
 
-        //Função de voltar home
+        // Função de voltar home
         function voltarPagina() {
-            history.back();
+            window.location.href = 'index.html';
         }
 
         // Verificar autenticação na tecla Enter
@@ -212,7 +233,9 @@
         });
 
         // Funções de navegação
-        function switchTab(tabName) {
+        function switchTab(event, tabName) {
+            console.log('📑 Mudando para aba:', tabName);
+            
             // Remover classe active de todos os botões e conteúdos
             document.querySelectorAll('.tab-btn').forEach(btn => btn.classList.remove('active'));
             document.querySelectorAll('.tab-content').forEach(content => content.classList.remove('active'));
@@ -232,17 +255,21 @@
         // Funções de upload de fotos
         document.getElementById('photo-form').addEventListener('submit', async function (e) {
             e.preventDefault();
+            console.log('📤 Iniciando upload de fotos...');
 
             const files = document.getElementById('photo-files').files;
             const description = document.getElementById('photo-description').value;
 
             if (files.length === 0) {
                 alert('Selecione pelo menos uma foto!');
+                console.log('❌ Nenhuma foto selecionada');
                 return;
             }
 
+            console.log(`📸 ${files.length} foto(s) selecionada(s)`);
+
             const loading = document.getElementById('photo-loading');
-            loading.classList.add('show');
+            loading.style.display = 'block';
 
             try {
                 for (let i = 0; i < files.length; i++) {
@@ -250,10 +277,15 @@
                     const timestamp = Date.now();
                     const fileName = `photos/${timestamp}_${i}_${file.name}`;
 
+                    console.log(`📤 Enviando: ${file.name} (${(file.size / 1024 / 1024).toFixed(2)} MB)`);
+
                     // Upload para Storage
                     const storageRef = storage.ref().child(fileName);
                     const uploadTask = await storageRef.put(file);
                     const downloadURL = await uploadTask.ref.getDownloadURL();
+
+                    console.log(`✅ Upload concluído: ${file.name}`);
+                    console.log(`🔗 URL: ${downloadURL}`);
 
                     // Salvar no Firestore
                     await db.collection('photos').add({
@@ -262,22 +294,27 @@
                         timestamp: firebase.firestore.FieldValue.serverTimestamp(),
                         fileName: fileName
                     });
+
+                    console.log(`💾 Salvo no Firestore`);
                 }
 
-                showMessage('Fotos enviadas com sucesso!', 'success');
+                showMessage('✅ Fotos enviadas com sucesso!', 'success');
                 document.getElementById('photo-form').reset();
+                document.querySelector('.file-upload-label').innerHTML = 
+                    '<i class="fas fa-cloud-upload-alt" style="font-size: 2rem; margin-right: 10px;"></i>Clique para selecionar fotos';
                 loadPhotos();
 
             } catch (error) {
-                console.error('Erro ao enviar fotos:', error);
-                showMessage('Erro ao enviar fotos. Tente novamente.', 'error');
+                console.error('❌ Erro ao enviar fotos:', error);
+                showMessage('❌ Erro ao enviar fotos: ' + error.message, 'error');
             } finally {
-                loading.classList.remove('show');
+                loading.style.display = 'none';
             }
         });
 
         // Função para carregar fotos
         async function loadPhotos() {
+            console.log('📸 Carregando fotos...');
             const grid = document.getElementById('photos-grid');
             grid.innerHTML = '<div class="loading"><div class="spinner"></div><p>Carregando fotos...</p></div>';
 
@@ -285,8 +322,10 @@
                 const snapshot = await db.collection('photos').orderBy('timestamp', 'desc').get();
                 grid.innerHTML = '';
 
+                console.log(`✅ ${snapshot.docs.length} foto(s) encontrada(s)`);
+
                 if (snapshot.empty) {
-                    grid.innerHTML = '<p style="text-align: center; color: #666;">Nenhuma foto encontrada.</p>';
+                    grid.innerHTML = '<p style="text-align: center; color: #666;">Nenhuma foto encontrada. Faça upload de fotos acima.</p>';
                     return;
                 }
 
@@ -297,8 +336,8 @@
                 });
 
             } catch (error) {
-                console.error('Erro ao carregar fotos:', error);
-                grid.innerHTML = '<p style="text-align: center; color: #ff6b6b;">Erro ao carregar fotos.</p>';
+                console.error('❌ Erro ao carregar fotos:', error);
+                grid.innerHTML = '<p style="text-align: center; color: #ff6b6b;">Erro ao carregar fotos: ' + error.message + '</p>';
             }
         }
 
@@ -307,11 +346,11 @@
             const card = document.createElement('div');
             card.className = 'item-card';
             card.innerHTML = `
-                <img src="${data.url}" alt="Foto da igreja" class="item-image">
+                <img src="${data.url}" alt="Foto da igreja" class="item-image" onerror="this.src='data:image/svg+xml,%3Csvg xmlns=%22http://www.w3.org/2000/svg%22 width=%22100%22 height=%22100%22%3E%3Crect fill=%22%23ddd%22 width=%22100%22 height=%22100%22/%3E%3Ctext fill=%22%23999%22 x=%2250%%22 y=%2250%%22 text-anchor=%22middle%22%3EErro%3C/text%3E%3C/svg%3E'">
                 <p><strong>Descrição:</strong> ${data.description || 'Sem descrição'}</p>
                 <p><strong>Data:</strong> ${data.timestamp ? new Date(data.timestamp.toDate()).toLocaleDateString('pt-BR') : 'N/A'}</p>
                 <div class="item-actions">
-                    <button class="btn btn-danger" onclick="deletePhoto('${id}', '${data.fileName}')">
+                    <button class="btn btn-danger" onclick="deletePhoto('${id}', '${data.fileName || ''}')">
                         <i class="fas fa-trash"></i> Excluir
                     </button>
                 </div>
@@ -323,27 +362,36 @@
         async function deletePhoto(docId, fileName) {
             if (!confirm('Tem certeza que deseja excluir esta foto?')) return;
 
+            console.log('🗑️ Excluindo foto:', docId);
+
             try {
                 // Deletar do Storage
                 if (fileName) {
-                    await storage.ref().child(fileName).delete();
+                    try {
+                        await storage.ref().child(fileName).delete();
+                        console.log('✅ Deletada do Storage');
+                    } catch (storageError) {
+                        console.warn('⚠️ Erro ao deletar do Storage:', storageError);
+                    }
                 }
 
                 // Deletar do Firestore
                 await db.collection('photos').doc(docId).delete();
+                console.log('✅ Deletada do Firestore');
 
-                showMessage('Foto excluída com sucesso!', 'success');
+                showMessage('✅ Foto excluída com sucesso!', 'success');
                 loadPhotos();
 
             } catch (error) {
-                console.error('Erro ao excluir foto:', error);
-                showMessage('Erro ao excluir foto.', 'error');
+                console.error('❌ Erro ao excluir foto:', error);
+                showMessage('❌ Erro ao excluir foto: ' + error.message, 'error');
             }
         }
 
         // Funções de eventos
         document.getElementById('event-form').addEventListener('submit', async function (e) {
             e.preventDefault();
+            console.log('📅 Adicionando evento...');
 
             const title = document.getElementById('event-title').value;
             const date = document.getElementById('event-date').value;
@@ -351,8 +399,10 @@
             const description = document.getElementById('event-description').value;
             const location = document.getElementById('event-location').value;
 
+            console.log('Evento:', { title, date, time, description, location });
+
             const loading = document.getElementById('event-loading');
-            loading.classList.add('show');
+            loading.style.display = 'block';
 
             try {
                 await db.collection('events').add({
@@ -364,20 +414,24 @@
                     timestamp: firebase.firestore.FieldValue.serverTimestamp()
                 });
 
-                showMessage('Evento adicionado com sucesso!', 'success');
+                console.log('✅ Evento adicionado com sucesso');
+                showMessage('✅ Evento adicionado com sucesso!', 'success');
                 document.getElementById('event-form').reset();
+                // Restaurar valor padrão do local
+                document.getElementById('event-location').value = 'Tv. Natividade, 07 - Novo Horizonte, Nilópolis - RJ';
                 loadEvents();
 
             } catch (error) {
-                console.error('Erro ao adicionar evento:', error);
-                showMessage('Erro ao adicionar evento.', 'error');
+                console.error('❌ Erro ao adicionar evento:', error);
+                showMessage('❌ Erro ao adicionar evento: ' + error.message, 'error');
             } finally {
-                loading.classList.remove('show');
+                loading.style.display = 'none';
             }
         });
 
         // Carregar eventos
         async function loadEvents() {
+            console.log('📅 Carregando eventos...');
             const grid = document.getElementById('events-grid');
             grid.innerHTML = '<div class="loading"><div class="spinner"></div><p>Carregando eventos...</p></div>';
 
@@ -385,8 +439,10 @@
                 const snapshot = await db.collection('events').orderBy('date', 'asc').get();
                 grid.innerHTML = '';
 
+                console.log(`✅ ${snapshot.docs.length} evento(s) encontrado(s)`);
+
                 if (snapshot.empty) {
-                    grid.innerHTML = '<p style="text-align: center; color: #666;">Nenhum evento encontrado.</p>';
+                    grid.innerHTML = '<p style="text-align: center; color: #666;">Nenhum evento encontrado. Adicione eventos acima.</p>';
                     return;
                 }
 
@@ -397,8 +453,8 @@
                 });
 
             } catch (error) {
-                console.error('Erro ao carregar eventos:', error);
-                grid.innerHTML = '<p style="text-align: center; color: #ff6b6b;">Erro ao carregar eventos.</p>';
+                console.error('❌ Erro ao carregar eventos:', error);
+                grid.innerHTML = '<p style="text-align: center; color: #ff6b6b;">Erro ao carregar eventos: ' + error.message + '</p>';
             }
         }
 
@@ -406,7 +462,14 @@
         function createEventCard(id, data) {
             const card = document.createElement('div');
             card.className = 'item-card';
-            const eventDate = new Date(data.date + 'T' + data.time);
+            
+            let eventDate;
+            try {
+                eventDate = new Date(data.date + 'T' + data.time);
+            } catch (e) {
+                eventDate = new Date();
+            }
+            
             const isUpcoming = eventDate > new Date();
 
             card.innerHTML = `
@@ -431,25 +494,44 @@
         async function deleteEvent(docId) {
             if (!confirm('Tem certeza que deseja excluir este evento?')) return;
 
+            console.log('🗑️ Excluindo evento:', docId);
+
             try {
                 await db.collection('events').doc(docId).delete();
-                showMessage('Evento excluído com sucesso!', 'success');
+                console.log('✅ Evento excluído');
+                showMessage('✅ Evento excluído com sucesso!', 'success');
                 loadEvents();
 
             } catch (error) {
-                console.error('Erro ao excluir evento:', error);
-                showMessage('Erro ao excluir evento.', 'error');
+                console.error('❌ Erro ao excluir evento:', error);
+                showMessage('❌ Erro ao excluir evento: ' + error.message, 'error');
             }
         }
 
         // Mostrar mensagens
         function showMessage(message, type) {
+            console.log('💬 Mensagem:', message);
+            
             // Remove mensagens existentes
             document.querySelectorAll('.success-message, .error-message').forEach(el => el.remove());
 
             const messageDiv = document.createElement('div');
             messageDiv.className = type + '-message';
             messageDiv.textContent = message;
+            messageDiv.style.padding = '15px';
+            messageDiv.style.borderRadius = '10px';
+            messageDiv.style.margin = '15px 0';
+            messageDiv.style.fontWeight = '500';
+
+            if (type === 'success') {
+                messageDiv.style.background = '#d4edda';
+                messageDiv.style.color = '#155724';
+                messageDiv.style.border = '1px solid #c3e6cb';
+            } else {
+                messageDiv.style.background = '#f8d7da';
+                messageDiv.style.color = '#721c24';
+                messageDiv.style.border = '1px solid #f5c6cb';
+            }
 
             const activeTab = document.querySelector('.tab-content.active');
             activeTab.insertBefore(messageDiv, activeTab.firstChild);
@@ -465,11 +547,44 @@
             const label = document.querySelector('.file-upload-label');
 
             if (files.length > 0) {
-                label.innerHTML = `<i class="fas fa-check-circle" style="color: #00b894; font-size: 2rem; margin-right: 10px;"></i>${files.length} foto(s) selecionada(s)`;
+                const totalSize = Array.from(files).reduce((sum, file) => sum + file.size, 0);
+                const sizeMB = (totalSize / 1024 / 1024).toFixed(2);
+                
+                label.innerHTML = `<i class="fas fa-check-circle" style="color: #00b894; font-size: 2rem; margin-right: 10px;"></i>${files.length} foto(s) selecionada(s) (${sizeMB} MB)`;
+                console.log(`📁 ${files.length} arquivo(s) selecionado(s) - ${sizeMB} MB`);
             } else {
                 label.innerHTML = '<i class="fas fa-cloud-upload-alt" style="font-size: 2rem; margin-right: 10px;"></i>Clique para selecionar fotos';
             }
         });
+
+        // Teste de conectividade ao carregar
+        window.addEventListener('load', async function() {
+            console.log('🔌 Testando conectividade com Firebase...');
+            
+            try {
+                // Testar Firestore
+                await db.collection('test').limit(1).get();
+                console.log('✅ Firestore: Conectado');
+                
+                // Testar Storage
+                const storageRef = storage.ref();
+                await storageRef.listAll();
+                console.log('✅ Storage: Conectado');
+                
+            } catch (error) {
+                console.error('❌ Erro de conectividade:', error);
+                alert('⚠️ Problemas de conectividade com Firebase. Verifique:\n\n' +
+                      '1. Suas regras de segurança do Firestore\n' +
+                      '2. Suas regras de segurança do Storage\n' +
+                      '3. Sua conexão com a internet\n\n' +
+                      'Erro: ' + error.message);
+            }
+        });
+
+        console.log('✅ Painel administrativo carregado completamente');
+        console.log('📋 Para testar:');
+        console.log('1. Senha: ibfav2025admin');
+        console.log('2. Abra F12 → Console para ver logs detalhados');
     </script>
 </body>
 
