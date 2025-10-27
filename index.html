@@ -8,7 +8,7 @@
   <link rel="stylesheet" href="style.css">
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
   
-  <!-- ✅ SCRIPTS FIREBASE CORRETOS (VERSÃO COMPAT) -->
+  <!-- Firebase SDK (Versão Compat) -->
   <script src="https://www.gstatic.com/firebasejs/10.12.4/firebase-app-compat.js"></script>
   <script src="https://www.gstatic.com/firebasejs/10.12.4/firebase-firestore-compat.js"></script>
 </head>
@@ -16,8 +16,8 @@
 <body class="index">
   <!-- HEADER -->
   <div class="header">
-    <h2> Igreja Batista Fonte de Água Viva </h2>
-    <h1> IBFAV - Nilópolis/RJ</h1>
+    <h2>Igreja Batista Fonte de Água Viva</h2>
+    <h1>IBFAV - Nilópolis/RJ</h1>
   </div>
 
   <!-- DIAS DE CULTO -->
@@ -38,16 +38,16 @@
   <div class="section redes-sociais">
     <h2><i class="fas fa-share-alt"></i> Redes Sociais</h2>
     <nav>
-      <a href="https://www.facebook.com/ibfav" target="_blank">
+      <a href="https://www.facebook.com/ibfav" target="_blank" rel="noopener">
         <i class="fab fa-facebook"></i> Facebook
       </a>
-      <a href="https://instagram.com/ibfavnilopolis" target="_blank">
+      <a href="https://instagram.com/ibfavnilopolis" target="_blank" rel="noopener">
         <i class="fab fa-instagram"></i> Instagram
       </a>
-      <a href="https://www.youtube.com/@IgrejabatistafontedeaguavivaIb" target="_blank">
+      <a href="https://www.youtube.com/@IgrejabatistafontedeaguavivaIb" target="_blank" rel="noopener">
         <i class="fab fa-youtube"></i> YouTube
       </a>
-      <a href="https://wa.me/5521992415936" target="_blank">
+      <a href="https://wa.me/5521992415936" target="_blank" rel="noopener">
         <i class="fab fa-whatsapp"></i> WhatsApp
       </a>
     </nav>
@@ -113,20 +113,12 @@
   <!-- Modal para imagens -->
   <div id="imageModal" class="modal">
     <span class="close">&times;</span>
-    <img class="modal-content" id="modalImage">
+    <img class="modal-content" id="modalImage" alt="Imagem ampliada">
   </div>
 
   <script>
-    console.log('🔥 Verificando Firebase...');
+    console.log('🔥 Inicializando site IBFAV...');
     
-    // Verificar se Firebase foi carregado
-    if (typeof firebase === 'undefined') {
-      console.error('❌ Firebase não carregado!');
-      alert('Erro ao carregar Firebase. Verifique sua conexão.');
-    } else {
-      console.log('✅ Firebase carregado com sucesso');
-    }
-
     // Configuração do Firebase
     const firebaseConfig = {
       apiKey: "AIzaSyC0CY0Ds3tARkQFSOAOY8aVMnoFvDbu9Rs",
@@ -137,35 +129,38 @@
       appId: "1:666092929823:web:c17194e606d41da397662a"
     };
 
-    let app, db;
+    let db;
 
+    // Inicializar Firebase
     try {
-      // Inicializar Firebase
-      app = firebase.initializeApp(firebaseConfig);
+      if (typeof firebase === 'undefined') {
+        throw new Error('Firebase não carregado');
+      }
+      
+      firebase.initializeApp(firebaseConfig);
       db = firebase.firestore();
-      console.log('✅ Firebase inicializado:', app.name);
-      console.log('✅ Firestore conectado');
+      console.log('✅ Firebase inicializado com sucesso');
     } catch (error) {
       console.error('❌ Erro ao inicializar Firebase:', error);
+      showFallbackContent();
     }
 
     // Carregar agenda
     async function loadAgenda() {
       console.log('📅 Carregando agenda...');
       const agendaContainer = document.getElementById('agenda');
+      const loadingElement = document.getElementById('agenda-loading');
 
       try {
         const today = new Date().toISOString().split('T')[0];
-        console.log('Data de hoje:', today);
-
+        
         const snapshot = await db.collection('events')
           .where('date', '>=', today)
           .orderBy('date', 'asc')
           .limit(10)
           .get();
 
-        document.getElementById('agenda-loading').style.display = 'none';
-
+        loadingElement.style.display = 'none';
         console.log(`✅ ${snapshot.docs.length} evento(s) encontrado(s)`);
 
         if (snapshot.empty) {
@@ -202,7 +197,7 @@
 
       } catch (error) {
         console.error('❌ Erro ao carregar agenda:', error);
-        document.getElementById('agenda-loading').style.display = 'none';
+        loadingElement.style.display = 'none';
         agendaContainer.innerHTML = `
           <div class="empty-state">
             <i class="fas fa-exclamation-triangle"></i>
@@ -217,6 +212,7 @@
     async function loadGaleria() {
       console.log('📸 Carregando galeria...');
       const galeriaContainer = document.getElementById('galeria');
+      const loadingElement = document.getElementById('galeria-loading');
 
       try {
         const snapshot = await db.collection('photos')
@@ -224,8 +220,7 @@
           .limit(20)
           .get();
 
-        document.getElementById('galeria-loading').style.display = 'none';
-
+        loadingElement.style.display = 'none';
         console.log(`✅ ${snapshot.docs.length} foto(s) encontrada(s)`);
 
         if (snapshot.empty) {
@@ -247,18 +242,64 @@
           img.src = data.url;
           img.alt = data.description || 'Foto da igreja';
           img.title = data.description || '';
+          img.loading = 'lazy';
           img.onclick = () => openModal(data.url);
           galeriaContainer.appendChild(img);
         });
 
       } catch (error) {
         console.error('❌ Erro ao carregar galeria:', error);
-        document.getElementById('galeria-loading').style.display = 'none';
+        loadingElement.style.display = 'none';
         galeriaContainer.innerHTML = `
           <div class="empty-state">
             <i class="fas fa-exclamation-triangle"></i>
             <h3>Erro ao carregar fotos</h3>
             <p>${error.message}</p>
+          </div>
+        `;
+      }
+    }
+
+    // Conteúdo de fallback
+    function showFallbackContent() {
+      console.log('⚠️ Mostrando conteúdo de fallback');
+      
+      const agendaContainer = document.getElementById('agenda');
+      if (agendaContainer) {
+        document.getElementById('agenda-loading').style.display = 'none';
+        agendaContainer.innerHTML = `
+          <li class="agenda-item">
+            <h3>Culto de Ensino</h3>
+            <div class="date-time">
+              <i class="fas fa-calendar-alt"></i> Todas as quartas-feiras
+              <i class="fas fa-clock"></i> 19:30h
+            </div>
+          </li>
+          <li class="agenda-item">
+            <h3>Escola Bíblica</h3>
+            <div class="date-time">
+              <i class="fas fa-calendar-alt"></i> Todos os domingos
+              <i class="fas fa-clock"></i> 09:00h
+            </div>
+          </li>
+          <li class="agenda-item">
+            <h3>Culto da Família</h3>
+            <div class="date-time">
+              <i class="fas fa-calendar-alt"></i> Todos os domingos
+              <i class="fas fa-clock"></i> 18:00h
+            </div>
+          </li>
+        `;
+      }
+      
+      const galeriaContainer = document.getElementById('galeria');
+      if (galeriaContainer) {
+        document.getElementById('galeria-loading').style.display = 'none';
+        galeriaContainer.innerHTML = `
+          <div class="empty-state">
+            <i class="fas fa-image"></i>
+            <h3>Galeria em manutenção</h3>
+            <p>Em breve teremos fotos dos nossos momentos especiais!</p>
           </div>
         `;
       }
@@ -277,34 +318,31 @@
       document.getElementById('imageModal').style.display = 'none';
     }
 
-    // Fechar modal clicando fora da imagem
     document.getElementById('imageModal').onclick = function (e) {
       if (e.target === this) {
         this.style.display = 'none';
       }
     }
 
-    // Limpar formulário após envio
+    // Fechar modal com ESC
+    document.addEventListener('keydown', function(e) {
+      if (e.key === 'Escape') {
+        document.getElementById('imageModal').style.display = 'none';
+      }
+    });
+
+    // Formulário de contato
     document.getElementById("form-contato").addEventListener("submit", function () {
       setTimeout(() => this.reset(), 1000);
     });
 
-    // Carregar dados quando a página carregar
+    // Inicializar quando a página carregar
     document.addEventListener('DOMContentLoaded', function () {
-      console.log('🚀 Página carregada, iniciando...');
-      loadAgenda();
-      loadGaleria();
-    });
-
-    // Efeito de parallax suave no scroll
-    window.addEventListener('scroll', function () {
-      const scrolled = window.pageYOffset;
-      const sections = document.querySelectorAll('.section');
-
-      sections.forEach((section, index) => {
-        const rate = scrolled * -0.3;
-        section.style.transform = `translateY(${rate}px)`;
-      });
+      console.log('🚀 Página carregada, iniciando carregamento de dados...');
+      if (db) {
+        loadAgenda();
+        loadGaleria();
+      }
     });
 
     console.log('✅ Script carregado completamente');
