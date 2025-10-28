@@ -82,7 +82,8 @@
   <div class="section">
     <div class="formulario">
       <h2><i class="fas fa-envelope"></i> Entre em Contato</h2>
-      <form id="form-contato" data-netlify="true" action="https://formsubmit.co/igrejabatistafontedeaguavivaib@gmail.com" method="POST" target="_blank">
+      <form id="form-contato" name="contato" method="POST" data-netlify="true">
+        <input type="hidden" name="form-name" value="contato">
         <input type="text" name="nome" id="contact-nome" placeholder="Seu nome" required>
         <input type="email" name="email" id="contact-email" placeholder="Seu e-mail" required>
         <textarea name="mensagem" id="contact-mensagem" placeholder="Sua mensagem" rows="5" required></textarea>
