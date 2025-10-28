@@ -15,9 +15,12 @@
 
 <body class="index">
   <!-- HEADER -->
+  <div class="nome">
+    <h1>IBFAV</h1>
+  </div>
   <div class="header">
     <h2>Igreja Batista Fonte de Água Viva</h2>
-    <h1>IBFAV - Nilópolis/RJ</h1>
+    <h1>Nilópolis/RJ</h1>
   </div>
 
   <!-- DIAS DE CULTO -->
@@ -31,7 +34,7 @@
   </div>
 
   <div class="endereco">
-    <i class="fas fa-map-marker-alt"></i> Endereço: Tv. Natividade, 07 - Novo Horizonte, Nilópolis - RJ
+    <i class="fas fa-map-marker-alt"></i> Endereço: Travessa Natividade, 07 - Novo Horizonte, Nilópolis - RJ
   </div>
 
   <!-- REDES SOCIAIS -->
@@ -79,20 +82,24 @@
   <div class="section">
     <div class="formulario">
       <h2><i class="fas fa-envelope"></i> Entre em Contato</h2>
-      <form id="form-contato" action="https://formsubmit.co/igrejabatistafontedeaguavivaib@gmail.com" method="POST">
-        <input type="text" name="nome" placeholder="Seu nome" required>
-        <input type="email" name="email" placeholder="Seu e-mail" required>
-        <textarea name="mensagem" placeholder="Sua mensagem" rows="5" required></textarea>
+      <form id="form-contato" data-netlify="true" action="https://formsubmit.co/igrejabatistafontedeaguavivaib@gmail.com" method="POST" target="_blank">
+        <input type="text" name="nome" id="contact-nome" placeholder="Seu nome" required>
+        <input type="email" name="email" id="contact-email" placeholder="Seu e-mail" required>
+        <textarea name="mensagem" id="contact-mensagem" placeholder="Sua mensagem" rows="5" required></textarea>
 
         <!-- Configurações FormSubmit -->
         <input type="hidden" name="_subject" value="📨 Novo contato via site IBFAV">
         <input type="hidden" name="_captcha" value="false">
+        <!-- <input type="hidden" name="_template" value="table"> -->
         <input type="hidden" name="_next" value="https://ibfav.netlify.app/obrigado.html">
         <input type="hidden" name="_error" value="https://ibfav.netlify.app/erro.html">
 
-        <button type="submit">
+        
+        <button type="submit" id="contact-submit-btn">
           <i class="fas fa-paper-plane"></i> Enviar Mensagem
         </button>
+        
+        <div id="contact-message" style="margin-top: 15px; text-align: center;"></div>
       </form>
     </div>
   </div>

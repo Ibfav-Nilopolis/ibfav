@@ -384,39 +384,62 @@
       }
 
       const loading = document.getElementById('photo-loading');
-      loading.classList.add('show');
+      loading.style.display = 'block';
 
       try {
+        let uploadedCount = 0;
+        
         for (let i = 0; i < files.length; i++) {
           const file = files[i];
+          
+          // Validar tipo de arquivo
+          if (!file.type.startsWith('image/')) {
+            console.warn(`Arquivo ${file.name} não é uma imagem válida`);
+            continue;
+          }
+          
           const timestamp = Date.now();
-          const fileName = `photos/${timestamp}_${i}_${file.name}`;
+          const sanitizedName = file.name.replace(/[^a-zA-Z0-9.-]/g, '_');
+          const fileName = `photos/${timestamp}_${i}_${sanitizedName}`;
+
+          console.log(`📤 Enviando foto ${i + 1}/${files.length}: ${file.name}`);
 
           // Upload para Storage
-          const storageRef = storage.ref().child(fileName);
+          const storageRef = storage.ref(fileName);
           const uploadTask = await storageRef.put(file);
+          
+          console.log('✅ Upload concluído, obtendo URL...');
           const downloadURL = await uploadTask.ref.getDownloadURL();
+          
+          console.log('✅ URL obtida:', downloadURL);
 
           // Salvar no Firestore
           await db.collection('photos').add({
             url: downloadURL,
-            description: description,
+            description: description || 'Sem descrição',
             timestamp: firebase.firestore.FieldValue.serverTimestamp(),
             fileName: fileName
           });
+          
+          uploadedCount++;
+          console.log(`✅ Foto ${uploadedCount} salva no Firestore`);
         }
 
-        showMessage('Fotos enviadas com sucesso!', 'success');
-        document.getElementById('photo-form').reset();
-        document.querySelector('.file-upload-label').innerHTML = '<i class="fas fa-cloud-upload-alt" style="font-size: 2rem; margin-right: 10px;"></i>Clique para selecionar fotos';
-        loadPhotos();
-        loadStats();
+        if (uploadedCount > 0) {
+          showMessage(`${uploadedCount} foto(s) enviada(s) com sucesso!`, 'success');
+          document.getElementById('photo-form').reset();
+          document.querySelector('.file-upload-label').innerHTML = '<i class="fas fa-cloud-upload-alt" style="font-size: 2rem; margin-right: 10px;"></i>Clique para selecionar fotos';
+          loadPhotos();
+          loadStats();
+        } else {
+          showMessage('Nenhuma foto válida foi enviada.', 'error');
+        }
 
       } catch (error) {
-        console.error('Erro ao enviar fotos:', error);
-        showMessage('Erro ao enviar fotos. Tente novamente.', 'error');
+        console.error('❌ Erro ao enviar fotos:', error);
+        showMessage(`Erro ao enviar fotos: ${error.message}`, 'error');
       } finally {
-        loading.classList.remove('show');
+        loading.style.display = 'none';
       }
     });
 

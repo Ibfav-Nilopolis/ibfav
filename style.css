@@ -32,6 +32,14 @@
         text-align: center;
     }
 
+    .nome {
+        display: flex;
+        justify-content: center;
+        margin-top: 10px;
+        font-size: 50px;
+        text-align: center;
+    }
+
     .header h1,
     h2 {
         font-size: 3rem;
