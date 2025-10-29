@@ -220,7 +220,7 @@
     const loginMessage = document.getElementById("loginMessage");
 
     loginBtn.addEventListener("click", handleLogin);
-    
+
     document.getElementById("loginPassword").addEventListener('keypress', function (e) {
       if (e.key === 'Enter') {
         handleLogin();
@@ -230,7 +230,7 @@
     async function handleLogin() {
       const email = document.getElementById("loginEmail").value.trim();
       const password = document.getElementById("loginPassword").value.trim();
-      
+
       if (!email || !password) {
         loginMessage.innerHTML = "<p class='error-message'>Preencha todos os campos.</p>";
         return;
@@ -251,13 +251,13 @@
         loginMessage.innerHTML = "";
         document.getElementById("login-section").style.display = "none";
         document.getElementById("admin-panel").style.display = "block";
-        
+
         // Carregar dados
         loadUsers();
         loadPhotos();
         loadEvents();
         loadStats();
-        
+
       } catch (error) {
         console.error('Erro no login:', error);
         loginMessage.innerHTML = `<p class='error-message'>Erro: ${error.message}</p>`;
@@ -308,7 +308,7 @@
 
       try {
         userMessage.innerHTML = "<p>Criando usuário...</p>";
-        
+
         // Criar usuário via Firebase Auth REST API
         const response = await fetch(`https://identitytoolkit.googleapis.com/v1/accounts:signUp?key=${firebaseConfig.apiKey}`, {
           method: "POST",
@@ -317,7 +317,7 @@
         });
 
         const data = await response.json();
-        
+
         if (data.error) {
           throw new Error(data.error.message);
         }
@@ -334,7 +334,7 @@
         document.getElementById("newUserPassword").value = '';
         loadUsers();
         loadStats();
-        
+
       } catch (error) {
         console.error('Erro ao criar usuário:', error);
         userMessage.innerHTML = `<p class='error-message'>Erro: ${error.message}</p>`;
@@ -349,12 +349,12 @@
       try {
         const snapshot = await db.collection("users").get();
         list.innerHTML = "";
-        
+
         if (snapshot.empty) {
           list.innerHTML = "<p>Nenhum usuário encontrado.</p>";
           return;
         }
-        
+
         snapshot.forEach(doc => {
           const data = doc.data();
           const card = document.createElement('div');
@@ -389,16 +389,16 @@
 
       try {
         let uploadedCount = 0;
-        
+
         for (let i = 0; i < files.length; i++) {
           const file = files[i];
-          
+
           // Validar tipo de arquivo
           if (!file.type.startsWith('image/')) {
             console.warn(`Arquivo ${file.name} não é uma imagem válida`);
             continue;
           }
-          
+
           const timestamp = Date.now();
           const sanitizedName = file.name.replace(/[^a-zA-Z0-9.-]/g, '_');
           const fileName = `photos/${timestamp}_${i}_${sanitizedName}`;
@@ -408,10 +408,10 @@
           // Upload para Storage
           const storageRef = storage.ref(fileName);
           const uploadTask = await storageRef.put(file);
-          
+
           console.log('✅ Upload concluído, obtendo URL...');
           const downloadURL = await uploadTask.ref.getDownloadURL();
-          
+
           console.log('✅ URL obtida:', downloadURL);
 
           // Salvar no Firestore
@@ -421,7 +421,7 @@
             timestamp: firebase.firestore.FieldValue.serverTimestamp(),
             fileName: fileName
           });
-          
+
           uploadedCount++;
           console.log(`✅ Foto ${uploadedCount} salva no Firestore`);
         }
@@ -488,7 +488,7 @@
     }
 
     // EXCLUIR FOTO (Global)
-    window.deletePhoto = async function(docId, fileName) {
+    window.deletePhoto = async function (docId, fileName) {
       if (!confirm('Tem certeza que deseja excluir esta foto?')) return;
 
       try {
@@ -598,7 +598,7 @@
     }
 
     // EXCLUIR EVENTO (Global)
-    window.deleteEvent = async function(docId) {
+    window.deleteEvent = async function (docId) {
       if (!confirm('Tem certeza que deseja excluir este evento?')) return;
 
       try {

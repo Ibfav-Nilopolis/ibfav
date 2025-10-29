@@ -1,14 +1,14 @@
 // main.js - Arquivo JavaScript principal para o site IBFAV
 
 // Aguardar carregamento do DOM
-document.addEventListener('DOMContentLoaded', function() {
+document.addEventListener('DOMContentLoaded', function () {
     initializeSite();
 });
 
 // Inicializar o site
 function initializeSite() {
     console.log('🔥 Site IBFAV inicializado');
-    
+
     // Verificar se Firebase está disponível
     if (typeof firebase === 'undefined') {
         console.error('Firebase não carregado');
@@ -19,10 +19,10 @@ function initializeSite() {
     // Carregar dados do Firebase
     loadAgendaData();
     loadGaleriaData();
-    
+
     // Configurar event listeners
     setupEventListeners();
-    
+
     // Aplicar animações
     setupAnimations();
 }
@@ -31,14 +31,14 @@ function initializeSite() {
 async function loadAgendaData() {
     const agendaContainer = document.getElementById('agenda');
     if (!agendaContainer) return;
-    
+
     showLoading('agenda');
-    
+
     try {
         // Buscar eventos futuros
         const now = new Date();
         const today = now.toISOString().split('T')[0];
-        
+
         const snapshot = await db.collection('events')
             .where('date', '>=', today)
             .orderBy('date', 'asc')
@@ -54,7 +54,7 @@ async function loadAgendaData() {
 
         // Limpar container
         agendaContainer.innerHTML = '';
-        
+
         // Adicionar eventos
         snapshot.forEach(doc => {
             const event = doc.data();
@@ -76,9 +76,9 @@ async function loadAgendaData() {
 async function loadGaleriaData() {
     const galeriaContainer = document.getElementById('galeria');
     if (!galeriaContainer) return;
-    
+
     showLoading('galeria');
-    
+
     try {
         const snapshot = await db.collection('photos')
             .orderBy('timestamp', 'desc')
@@ -94,7 +94,7 @@ async function loadGaleriaData() {
 
         // Limpar container
         galeriaContainer.innerHTML = '';
-        
+
         // Adicionar fotos
         snapshot.forEach(doc => {
             const photo = doc.data();
@@ -104,7 +104,7 @@ async function loadGaleriaData() {
 
         // Aplicar animações
         animateElements('.galeria-grid img');
-        
+
         // Configurar lazy loading para imagens
         setupLazyLoading();
 
@@ -121,11 +121,11 @@ function createEventElement(event) {
     const now = new Date();
     const isToday = now.toDateString() === eventDate.toDateString();
     const isUpcoming = eventDate > now;
-    
+
     const li = document.createElement('li');
     li.className = 'agenda-item';
     li.setAttribute('data-event-id', event.id || '');
-    
+
     li.innerHTML = `
         <div class="event-header">
             <h3 class="event-title">
@@ -162,7 +162,7 @@ function createEventElement(event) {
             ${isUpcoming ? '🟢 Próximo evento' : '🔴 Evento passado'}
         </div>
     `;
-    
+
     return li;
 }
 
@@ -174,16 +174,16 @@ function createPhotoElement(photo) {
     img.title = photo.description || '';
     img.className = 'gallery-image';
     img.loading = 'lazy'; // Lazy loading nativo
-    
+
     // Adicionar evento de clique para modal
     img.addEventListener('click', () => openPhotoModal(photo));
-    
+
     // Adicionar atributos para SEO
     img.setAttribute('data-photo-id', photo.id || '');
     if (photo.timestamp) {
         img.setAttribute('data-date', photo.timestamp.toDate().toISOString());
     }
-    
+
     return img;
 }
 
@@ -195,19 +195,19 @@ function openPhotoModal(photo) {
         modal = createPhotoModal();
         document.body.appendChild(modal);
     }
-    
+
     const modalImg = modal.querySelector('.modal-image');
     const modalCaption = modal.querySelector('.modal-caption');
     const modalDate = modal.querySelector('.modal-date');
-    
+
     modalImg.src = photo.url;
     modalImg.alt = photo.description || 'Foto da Igreja';
-    
+
     if (modalCaption) {
         modalCaption.textContent = photo.description || '';
         modalCaption.style.display = photo.description ? 'block' : 'none';
     }
-    
+
     if (modalDate && photo.timestamp) {
         const date = photo.timestamp.toDate();
         modalDate.textContent = `📅 ${formatDate(date)}`;
@@ -215,10 +215,10 @@ function openPhotoModal(photo) {
     } else if (modalDate) {
         modalDate.style.display = 'none';
     }
-    
+
     modal.style.display = 'flex';
     document.body.style.overflow = 'hidden'; // Prevenir scroll
-    
+
     // Adicionar evento de teclado ESC
     const handleEscape = (e) => {
         if (e.key === 'Escape') {
@@ -234,7 +234,7 @@ function createPhotoModal() {
     const modal = document.createElement('div');
     modal.id = 'photoModal';
     modal.className = 'photo-modal';
-    
+
     modal.innerHTML = `
         <div class="modal-content">
             <span class="modal-close">&times;</span>
@@ -246,11 +246,11 @@ function createPhotoModal() {
         </div>
         <div class="modal-backdrop"></div>
     `;
-    
+
     // Eventos de fechamento
     modal.querySelector('.modal-close').addEventListener('click', closePhotoModal);
     modal.querySelector('.modal-backdrop').addEventListener('click', closePhotoModal);
-    
+
     return modal;
 }
 
@@ -283,7 +283,7 @@ function hideLoading(section) {
 function showEmptyState(containerId, iconClass, title, message) {
     const container = document.getElementById(containerId);
     if (!container) return;
-    
+
     container.innerHTML = `
         <div class="empty-state">
             <i class="fas fa-${iconClass}"></i>
@@ -297,7 +297,7 @@ function showEmptyState(containerId, iconClass, title, message) {
 function showErrorState(containerId, message) {
     const container = document.getElementById(containerId);
     if (!container) return;
-    
+
     container.innerHTML = `
         <div class="error-state">
             <i class="fas fa-exclamation-triangle"></i>
@@ -313,7 +313,7 @@ function showErrorState(containerId, message) {
 // Mostrar conteúdo de fallback quando Firebase não estiver disponível
 function showFallbackContent() {
     console.log('Mostrando conteúdo de fallback');
-    
+
     // Agenda de fallback
     const agendaContainer = document.getElementById('agenda');
     if (agendaContainer) {
@@ -353,7 +353,7 @@ function showFallbackContent() {
             </li>
         `;
     }
-    
+
     // Galeria de fallback
     const galeriaContainer = document.getElementById('galeria');
     if (galeriaContainer) {
@@ -368,7 +368,7 @@ function setupEventListeners() {
     if (form) {
         form.addEventListener('submit', handleContactForm);
     }
-    
+
     // Smooth scroll para links internos
     document.querySelectorAll('a[href^="#"]').forEach(anchor => {
         anchor.addEventListener('click', function (e) {
@@ -382,10 +382,10 @@ function setupEventListeners() {
             }
         });
     });
-    
+
     // Observer para animações no scroll
     setupScrollAnimations();
-    
+
     // Adicionar efeito ripple aos botões
     setupRippleEffect();
 }
@@ -397,7 +397,7 @@ function setupAnimations() {
         threshold: 0.1,
         rootMargin: '0px 0px -50px 0px'
     };
-    
+
     const observer = new IntersectionObserver((entries) => {
         entries.forEach(entry => {
             if (entry.isIntersecting) {
@@ -406,7 +406,7 @@ function setupAnimations() {
             }
         });
     }, observerOptions);
-    
+
     // Observar seções principais
     document.querySelectorAll('.section').forEach(section => {
         observer.observe(section);
@@ -420,7 +420,7 @@ function animateElements(selector) {
         element.style.opacity = '0';
         element.style.transform = 'translateY(20px)';
         element.style.transition = 'all 0.6s ease';
-        
+
         setTimeout(() => {
             element.style.opacity = '1';
             element.style.transform = 'translateY(0)';
@@ -431,27 +431,27 @@ function animateElements(selector) {
 // Configurar animações no scroll
 function setupScrollAnimations() {
     let ticking = false;
-    
+
     function updateScrollAnimations() {
         const scrolled = window.pageYOffset;
         const rate = scrolled * -0.1;
-        
+
         // Parallax suave no header
         const header = document.querySelector('.header');
         if (header) {
             header.style.transform = `translateY(${rate}px)`;
         }
-        
+
         ticking = false;
     }
-    
+
     function requestScrollUpdate() {
         if (!ticking) {
             requestAnimationFrame(updateScrollAnimations);
             ticking = true;
         }
     }
-    
+
     window.addEventListener('scroll', requestScrollUpdate, { passive: true });
 }
 
@@ -470,7 +470,7 @@ function setupLazyLoading() {
                 }
             });
         });
-        
+
         document.querySelectorAll('img[data-src]').forEach(img => {
             imageObserver.observe(img);
         });
@@ -480,13 +480,13 @@ function setupLazyLoading() {
 // Configurar efeito ripple nos botões
 function setupRippleEffect() {
     document.querySelectorAll('.btn, .redes-sociais a').forEach(button => {
-        button.addEventListener('click', function(e) {
+        button.addEventListener('click', function (e) {
             const ripple = document.createElement('span');
             const rect = this.getBoundingClientRect();
             const size = Math.max(rect.width, rect.height);
             const x = e.clientX - rect.left - size / 2;
             const y = e.clientY - rect.top - size / 2;
-            
+
             ripple.style.cssText = `
                 position: absolute;
                 border-radius: 50%;
@@ -499,15 +499,15 @@ function setupRippleEffect() {
                 height: ${size}px;
                 pointer-events: none;
             `;
-            
+
             this.appendChild(ripple);
-            
+
             setTimeout(() => {
                 ripple.remove();
             }, 600);
         });
     });
-    
+
     // CSS da animação ripple
     const style = document.createElement('style');
     style.textContent = `
@@ -529,18 +529,18 @@ function setupRippleEffect() {
 function handleContactForm(e) {
     const form = e.target;
     const submitButton = form.querySelector('button[type="submit"]');
-    
+
     if (submitButton) {
         const originalText = submitButton.innerHTML;
         submitButton.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Enviando...';
         submitButton.disabled = true;
-        
+
         // Resetar após 3 segundos (tempo para o FormSubmit processar)
         setTimeout(() => {
             form.reset();
             submitButton.innerHTML = originalText;
             submitButton.disabled = false;
-            
+
             // Mostrar mensagem de sucesso
             showNotification('Mensagem enviada com sucesso! Entraremos em contato em breve.', 'success');
         }, 3000);
@@ -558,7 +558,7 @@ function showNotification(message, type = 'info') {
         </div>
         <button class="notification-close">&times;</button>
     `;
-    
+
     // Adicionar estilos se não existirem
     if (!document.querySelector('#notification-styles')) {
         const styles = document.createElement('style');
@@ -605,14 +605,14 @@ function showNotification(message, type = 'info') {
         `;
         document.head.appendChild(styles);
     }
-    
+
     document.body.appendChild(notification);
-    
+
     // Auto-remove após 5 segundos
     const autoRemove = setTimeout(() => {
         removeNotification(notification);
     }, 5000);
-    
+
     // Evento de fechar manual
     notification.querySelector('.notification-close').addEventListener('click', () => {
         clearTimeout(autoRemove);
@@ -628,7 +628,7 @@ function removeNotification(notification) {
             notification.parentNode.removeChild(notification);
         }
     }, 300);
-    
+
     // Adicionar animação de saída se não existir
     if (!document.querySelector('#slideout-animation')) {
         const style = document.createElement('style');
@@ -651,7 +651,7 @@ function formatDate(date) {
         month: 'long',
         day: 'numeric'
     };
-    
+
     return date.toLocaleDateString('pt-BR', options);
 }
 
@@ -670,7 +670,7 @@ function debounce(func, wait) {
 
 function throttle(func, limit) {
     let inThrottle;
-    return function() {
+    return function () {
         const args = arguments;
         const context = this;
         if (!inThrottle) {
@@ -691,7 +691,7 @@ function optimizeForMobile() {
     if (isMobile()) {
         // Reduzir animações em dispositivos móveis
         document.documentElement.style.setProperty('--animation-duration', '0.3s');
-        
+
         // Desabilitar parallax em dispositivos móveis
         const parallaxElements = document.querySelectorAll('[data-parallax]');
         parallaxElements.forEach(element => {
@@ -706,9 +706,9 @@ function trackPagePerformance() {
         window.addEventListener('load', () => {
             const perfData = performance.getEntriesByType('navigation')[0];
             const loadTime = perfData.loadEventEnd - perfData.loadEventStart;
-            
+
             console.log('🚀 Tempo de carregamento:', loadTime + 'ms');
-            
+
             // Enviar dados para analytics (se configurado)
             if (typeof gtag !== 'undefined') {
                 gtag('event', 'page_load_time', {
