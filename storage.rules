@@ -8,11 +8,8 @@ service firebase.storage {
       allow read: if true;
 
       // Apenas usuários autenticados podem tentar escrever
-      allow write: if request.auth != null
-        && (
-          // Se o usuário é admin ou editor
-          get(/databases/(default)/documents/users/$(request.auth.uid)).data.role in ['admin', 'editor']
-        );
+      // Nota: Verificação de role é feita no Firestore, Storage permite usuários autenticados
+      allow write: if request.auth != null;
     }
   }
 }

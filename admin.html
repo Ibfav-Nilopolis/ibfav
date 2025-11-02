@@ -407,10 +407,19 @@
 
           // Upload para Storage
           const storageRef = storage.ref(fileName);
-          const uploadTask = await storageRef.put(file);
+          const uploadTask = storageRef.put(file);
+
+          // Aguardar conclusão do upload usando Promise wrapper
+          await new Promise((resolve, reject) => {
+            uploadTask.on('state_changed', 
+              null, 
+              (error) => reject(error),
+              () => resolve()
+            );
+          });
 
           console.log('✅ Upload concluído, obtendo URL...');
-          const downloadURL = await uploadTask.ref.getDownloadURL();
+          const downloadURL = await storageRef.getDownloadURL();
 
           console.log('✅ URL obtida:', downloadURL);
 
