@@ -572,12 +572,12 @@
     // EXCLUIR FOTO (Global)
     window.deletePhoto = async function (docId, fileName) {
       if (!confirm('Tem certeza que deseja excluir esta foto?')) return;
-
+      
       try {
         // Deletar do Storage
-        if (fileName) {
-          await storage.ref().child(fileName).delete();
-        }
+        // if (fileName) {
+        //   await storage.ref().child(fileName).delete();
+        // }
 
         // Deletar do Firestore
         await db.collection('photos').doc(docId).delete();
