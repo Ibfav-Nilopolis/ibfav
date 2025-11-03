@@ -211,7 +211,15 @@
     firebase.initializeApp(firebaseConfig);
     const auth = firebase.auth();
     const db = firebase.firestore();
-    const storage = firebase.storage();
+    
+    let storage;
+    try {
+      storage = firebase.storage();
+      console.log('✅ Firebase Storage inicializado');
+    } catch (error) {
+      console.error('❌ Erro ao inicializar Storage:', error);
+      storage = null;
+    }
 
     console.log('✅ Firebase inicializado');
 
@@ -381,6 +389,11 @@
 
       if (files.length === 0) {
         showMessage('Selecione pelo menos uma foto!', 'error');
+        return;
+      }
+
+      if (!storage) {
+        showMessage('Firebase Storage não está configurado. Por favor, configure no console do Firebase.', 'error');
         return;
       }
 
