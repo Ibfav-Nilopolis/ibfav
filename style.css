@@ -181,7 +181,7 @@
     }
 
     .galeria-grid img:hover {
-        transform: scale(1.05) rotate(2deg);
+        transform: scale(1.05);
         box-shadow: 0 15px 35px rgba(255, 203, 87, 0.4);
     }
 
