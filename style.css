@@ -63,7 +63,7 @@
         text-align: center;
         margin-bottom: 30px;
         font-size: 2.2rem;
-        color: #66e438;
+        color: black;
     }
 
     .dias-de-culto ul {
@@ -143,7 +143,7 @@
         margin: 15px 0;
         padding: 20px;
         border-radius: 15px;
-        border-left: 5px solid #575252;
+        border-left: 5px solid #376ae2;
         transition: all 0.3s;
     }
 
@@ -153,7 +153,7 @@
     }
 
     .agenda-item h3 {
-        color: #feca57;
+        color: #376ae2;
         margin-bottom: 10px;
     }
 
@@ -165,14 +165,14 @@
 
     .galeria-grid {
         display: grid;
-        grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+        grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
         gap: 20px;
         margin-top: 30px;
     }
 
     .galeria-grid img {
-        width: 100%;
-        height: 250px;
+        width: 50%;
+        height: 150px;
         object-fit: cover;
         border-radius: 15px;
         transition: all 0.3s;
@@ -191,7 +191,20 @@
     }
 
     .formulario input,
-    .formulario textarea,
+    .formulario textarea {
+        width: 100%;
+        margin: 15px 0;
+        padding: 15px;
+        border: none;
+        border-radius: 15px;
+        border-left: 5px solid #376ae2;
+        font-size: 1em;
+        font-family: inherit;
+        transition: all 0.3s;
+        background: rgba(255, 255, 255, 0.1);
+        color: #333;
+    }
+
     .formulario button {
         width: 100%;
         margin: 15px 0;
@@ -548,8 +561,8 @@
     }
 
     .item-image {
-        width: 50px;
-        height: 50px;
+        width: 100%;
+        height: 200px;
         object-fit: cover;
         border-radius: 10px;
         margin-bottom: 15px;
