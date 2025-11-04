@@ -165,14 +165,17 @@
 
     .galeria-grid {
         display: grid;
-        grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+        grid-template-columns: repeat(auto-fill, minmax(250px, 1fr));
         gap: 20px;
         margin-top: 30px;
+        justify-items: center;
+        max-width: 100%;
     }
 
     .galeria-grid img {
-        width: 50%;
-        height: 150px;
+        width: 100%;
+        max-width: 350px;
+        height: 250px;
         object-fit: cover;
         border-radius: 15px;
         transition: all 0.3s;
@@ -541,12 +544,14 @@
 
     .items-grid {
         display: grid;
-        grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+        grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
         gap: 20px;
         margin-top: 30px;
     }
 
     .item-card {
+        width: 100%;
+        max-width: 380px;
         background: white;
         border-radius: 15px;
         padding: 20px;
@@ -562,7 +567,7 @@
 
     .item-image {
         width: 100%;
-        height: 100px;
+        height: 200px;
         object-fit: cover;
         border-radius: 10px;
         margin-bottom: 15px;
