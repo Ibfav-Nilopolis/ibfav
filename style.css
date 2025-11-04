@@ -174,8 +174,8 @@
 
     .galeria-grid img {
         width: 100%;
-        max-width: 350px;
-        height: 250px;
+        max-width: 250px;
+        height: 350px;
         object-fit: cover;
         border-radius: 15px;
         transition: all 0.3s;
