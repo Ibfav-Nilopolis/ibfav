@@ -112,6 +112,8 @@
         <h3><i class="fas fa-plus-circle"></i> Adicionar Evento</h3>
 
         <form id="event-form">
+          <input type="hidden" id="event-id">
+          
           <div class="form-group">
             <label for="event-title">Título do Evento:</label>
             <input type="text" id="event-title" required placeholder="Ex: Culto de Ensino">
@@ -137,9 +139,14 @@
             <input type="text" id="event-location" placeholder="Local do evento">
           </div>
 
-          <button type="submit" class="btn btn-success">
-            <i class="fas fa-calendar-plus"></i> Adicionar Evento
-          </button>
+          <div style="display: flex; gap: 10px;">
+            <button type="submit" class="btn btn-success" id="event-submit-btn">
+              <i class="fas fa-calendar-plus"></i> Adicionar Evento
+            </button>
+            <button type="button" class="btn" style="background: #6c757d; color: white; display: none;" id="event-cancel-btn">
+              <i class="fas fa-times"></i> Cancelar
+            </button>
+          </div>
         </form>
 
         <div class="loading" id="event-loading">
@@ -205,6 +212,97 @@
     </div>
   </div>
 
+  <!-- Modal de Edição de Foto -->
+  <div id="editPhotoModal" class="modal">
+    <div class="modal-dialog">
+      <div class="modal-header">
+        <h3><i class="fas fa-edit"></i> Editar Foto</h3>
+        <span class="modal-close" onclick="closeEditPhotoModal()">&times;</span>
+      </div>
+      <div class="modal-body">
+        <div class="form-group">
+          <label>Descrição:</label>
+          <textarea id="edit-photo-description" rows="3"></textarea>
+        </div>
+        <img id="edit-photo-preview" style="width: 100%; max-height: 300px; object-fit: contain; border-radius: 10px; margin-top: 10px;">
+      </div>
+      <div class="modal-footer">
+        <button class="btn btn-success" onclick="savePhotoEdit()">
+          <i class="fas fa-save"></i> Salvar
+        </button>
+        <button class="btn" style="background: #6c757d; color: white;" onclick="closeEditPhotoModal()">
+          Cancelar
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <style>
+    .modal {
+      display: none;
+      position: fixed;
+      z-index: 3000;
+      left: 0;
+      top: 0;
+      width: 100%;
+      height: 100%;
+      background-color: rgba(0, 0, 0, 0.7);
+      backdrop-filter: blur(5px);
+    }
+
+    .modal-dialog {
+      background: white;
+      margin: 50px auto;
+      max-width: 600px;
+      border-radius: 15px;
+      overflow: hidden;
+      animation: slideDown 0.3s ease-out;
+    }
+
+    .modal-header {
+      background: linear-gradient(45deg, #667eea, #764ba2);
+      color: white;
+      padding: 20px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+
+    .modal-header h3 {
+      margin: 0;
+      color: white;
+    }
+
+    .modal-close {
+      font-size: 28px;
+      cursor: pointer;
+      color: white;
+    }
+
+    .modal-body {
+      padding: 20px;
+    }
+
+    .modal-footer {
+      padding: 15px 20px;
+      display: flex;
+      gap: 10px;
+      justify-content: flex-end;
+      border-top: 1px solid #ddd;
+    }
+
+    @keyframes slideDown {
+      from {
+        transform: translateY(-50px);
+        opacity: 0;
+      }
+      to {
+        transform: translateY(0);
+        opacity: 1;
+      }
+    }
+  </style>
+
   <script>
     console.log('🔧 Iniciando painel administrativo...');
 
@@ -214,7 +312,6 @@
       authDomain: "ibfav-c9d00.firebaseapp.com",
       projectId: "ibfav-c9d00",
       storageBucket: "ibfav-c9d00.firebasestorage.app",
-      // storageBucket: "ibfav-c9d00.appspot.com",
       messagingSenderId: "666092929823",
       appId: "1:666092929823:web:c17194e606d41da397662a"
     };
@@ -234,6 +331,9 @@
     }
 
     console.log('✅ Firebase inicializado');
+
+    // Variáveis globais para edição
+    let currentEditPhotoId = null;
 
     // LOGIN
     const loginBtn = document.getElementById("loginBtn");
@@ -329,7 +429,6 @@
       try {
         userMessage.innerHTML = "<p>Criando usuário...</p>";
 
-        // Criar usuário via Firebase Auth REST API
         const response = await fetch(`https://identitytoolkit.googleapis.com/v1/accounts:signUp?key=${firebaseConfig.apiKey}`, {
           method: "POST",
           headers: { "Content-Type": "application/json" },
@@ -342,7 +441,6 @@
           throw new Error(data.error.message);
         }
 
-        // Salvar função (role) no Firestore
         await db.collection("users").doc(data.localId).set({
           email: email,
           role: role,
@@ -419,7 +517,6 @@
       const storageRef = storage.ref(fileName);
       const uploadTask = storageRef.put(file);
 
-      // Aguardar conclusão do upload usando Promise wrapper
       await new Promise((resolve, reject) => {
         uploadTask.on('state_changed', 
           null, 
@@ -445,7 +542,6 @@
         return;
       }
 
-      // Verificar se Firebase Storage está disponível quando necessário
       if (storageService === 'firebase' && !storage) {
         showMessage('Firebase Storage não está configurado. Por favor, configure no console do Firebase ou escolha outro serviço.', 'error');
         return;
@@ -460,7 +556,6 @@
         for (let i = 0; i < files.length; i++) {
           const file = files[i];
 
-          // Validar tipo de arquivo
           if (!file.type.startsWith('image/')) {
             console.warn(`Arquivo ${file.name} não é uma imagem válida`);
             continue;
@@ -471,7 +566,6 @@
           let downloadURL;
           let fileName;
 
-          // Upload baseado no serviço selecionado
           switch(storageService) {
             case 'imgur':
               downloadURL = await uploadToImgur(file);
@@ -494,7 +588,6 @@
 
           console.log('✅ URL obtida:', downloadURL);
 
-          // Salvar no Firestore
           await db.collection('photos').add({
             url: downloadURL,
             description: description || 'Sem descrição',
@@ -561,7 +654,10 @@
         <p><strong>Descrição:</strong> ${data.description || 'Sem descrição'}</p>
         <p><strong>Data:</strong> ${data.timestamp ? new Date(data.timestamp.toDate()).toLocaleDateString('pt-BR') : 'N/A'}</p>
         <div class="item-actions">
-          <button class="btn btn-danger" onclick="deletePhoto('${id}', '${data.fileName}')">
+          <button class="btn btn-success" onclick="editPhoto('${id}', '${encodeURIComponent(data.description)}', '${data.url}')">
+            <i class="fas fa-edit"></i> Editar
+          </button>
+          <button class="btn btn-danger" onclick="deletePhoto('${id}', '${data.fileName || ''}', '${data.storageService || ''}')">
             <i class="fas fa-trash"></i> Excluir
           </button>
         </div>
@@ -569,33 +665,73 @@
       return card;
     }
 
-    // EXCLUIR FOTO (Global)
-    window.deletePhoto = async function (docId, fileName) {
+    // EDITAR FOTO (Global)
+    window.editPhoto = function(docId, description, url) {
+      currentEditPhotoId = docId;
+      document.getElementById('edit-photo-description').value = decodeURIComponent(description);
+      document.getElementById('edit-photo-preview').src = url;
+      document.getElementById('editPhotoModal').style.display = 'block';
+    }
+
+    window.closeEditPhotoModal = function() {
+      document.getElementById('editPhotoModal').style.display = 'none';
+      currentEditPhotoId = null;
+    }
+
+    window.savePhotoEdit = async function() {
+      if (!currentEditPhotoId) return;
+
+      const newDescription = document.getElementById('edit-photo-description').value;
+
+      try {
+        await db.collection('photos').doc(currentEditPhotoId).update({
+          description: newDescription
+        });
+
+        showMessage('Foto atualizada com sucesso!', 'success');
+        closeEditPhotoModal();
+        loadPhotos();
+
+      } catch (error) {
+        console.error('Erro ao atualizar foto:', error);
+        showMessage('Erro ao atualizar foto.', 'error');
+      }
+    }
+
+    // EXCLUIR FOTO (Global) - CORRIGIDO
+    window.deletePhoto = async function(docId, fileName, storageService) {
       if (!confirm('Tem certeza que deseja excluir esta foto?')) return;
 
       try {
-        // Deletar do Storage
-        if (fileName) {
-          await storage.ref().child(fileName).delete();
+        // Deletar do Storage apenas se for Firebase
+        if (storageService === 'firebase' && fileName && storage) {
+          try {
+            await storage.ref(fileName).delete();
+            console.log('✅ Foto deletada do Storage');
+          } catch (storageError) {
+            console.warn('⚠️ Erro ao deletar do Storage (pode já ter sido deletada):', storageError);
+          }
         }
 
         // Deletar do Firestore
         await db.collection('photos').doc(docId).delete();
+        console.log('✅ Foto deletada do Firestore');
 
         showMessage('Foto excluída com sucesso!', 'success');
         loadPhotos();
         loadStats();
 
       } catch (error) {
-        console.error('Erro ao excluir foto:', error);
-        showMessage('Erro ao excluir foto.', 'error');
+        console.error('❌ Erro ao excluir foto:', error);
+        showMessage(`Erro ao excluir foto: ${error.message}`, 'error');
       }
     }
 
-    // ADICIONAR EVENTO
+    // ADICIONAR/EDITAR EVENTO
     document.getElementById('event-form').addEventListener('submit', async function (e) {
       e.preventDefault();
 
+      const eventId = document.getElementById('event-id').value;
       const title = document.getElementById('event-title').value;
       const date = document.getElementById('event-date').value;
       const time = document.getElementById('event-time').value;
@@ -606,27 +742,46 @@
       loading.classList.add('show');
 
       try {
-        await db.collection('events').add({
+        const eventData = {
           title: title,
           date: date,
           time: time,
           description: description,
-          location: location,
-          timestamp: firebase.firestore.FieldValue.serverTimestamp()
-        });
+          location: location
+        };
 
-        showMessage('Evento adicionado com sucesso!', 'success');
-        document.getElementById('event-form').reset();
+        if (eventId) {
+          // Editar evento existente
+          await db.collection('events').doc(eventId).update(eventData);
+          showMessage('Evento atualizado com sucesso!', 'success');
+        } else {
+          // Adicionar novo evento
+          eventData.timestamp = firebase.firestore.FieldValue.serverTimestamp();
+          await db.collection('events').add(eventData);
+          showMessage('Evento adicionado com sucesso!', 'success');
+        }
+
+        resetEventForm();
         loadEvents();
         loadStats();
 
       } catch (error) {
-        console.error('Erro ao adicionar evento:', error);
-        showMessage('Erro ao adicionar evento.', 'error');
+        console.error('Erro ao salvar evento:', error);
+        showMessage('Erro ao salvar evento.', 'error');
       } finally {
         loading.classList.remove('show');
       }
     });
+
+    // Cancelar edição de evento
+    document.getElementById('event-cancel-btn').addEventListener('click', resetEventForm);
+
+    function resetEventForm() {
+      document.getElementById('event-form').reset();
+      document.getElementById('event-id').value = '';
+      document.getElementById('event-submit-btn').innerHTML = '<i class="fas fa-calendar-plus"></i> Adicionar Evento';
+      document.getElementById('event-cancel-btn').style.display = 'none';
+    }
 
     // CARREGAR EVENTOS
     async function loadEvents() {
@@ -671,12 +826,48 @@
           <small style="color: #999;">Status: ${isUpcoming ? '🟢 Próximo' : '🔴 Passado'}</small>
         </div>
         <div class="item-actions">
+          <button class="btn btn-success" onclick="editEvent('${id}')">
+            <i class="fas fa-edit"></i> Editar
+          </button>
           <button class="btn btn-danger" onclick="deleteEvent('${id}')">
             <i class="fas fa-trash"></i> Excluir
           </button>
         </div>
       `;
       return card;
+    }
+
+    // EDITAR EVENTO (Global)
+    window.editEvent = async function(docId) {
+      try {
+        const doc = await db.collection('events').doc(docId).get();
+        
+        if (!doc.exists) {
+          showMessage('Evento não encontrado.', 'error');
+          return;
+        }
+
+        const data = doc.data();
+        
+        // Preencher o formulário com os dados do evento
+        document.getElementById('event-id').value = docId;
+        document.getElementById('event-title').value = data.title;
+        document.getElementById('event-date').value = data.date;
+        document.getElementById('event-time').value = data.time;
+        document.getElementById('event-description').value = data.description || '';
+        document.getElementById('event-location').value = data.location || '';
+
+        // Alterar texto do botão e mostrar botão cancelar
+        document.getElementById('event-submit-btn').innerHTML = '<i class="fas fa-save"></i> Atualizar Evento';
+        document.getElementById('event-cancel-btn').style.display = 'inline-block';
+
+        // Scroll para o formulário
+        document.getElementById('event-form').scrollIntoView({ behavior: 'smooth', block: 'start' });
+
+      } catch (error) {
+        console.error('Erro ao carregar evento para edição:', error);
+        showMessage('Erro ao carregar evento.', 'error');
+      }
     }
 
     // EXCLUIR EVENTO (Global)
