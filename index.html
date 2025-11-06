@@ -312,19 +312,33 @@
       }
     }
 
-    // Modal para imagens - MELHORADO
+    // Modal para imagens - MELHORADO E AMPLIADO
     function openModal(imageSrc, description) {
       const modal = document.getElementById('imageModal');
       const modalImg = document.getElementById('modalImage');
       
-      modal.style.display = 'flex';
-      modalImg.src = imageSrc;
-      modalImg.alt = description || 'Foto da igreja';
+      // Mostrar modal
+      modal.style.display = 'block';
+      
+      // Criar nova imagem para pegar dimensões reais
+      const img = new Image();
+      img.onload = function() {
+        // Aplicar imagem com tamanho real (limitado apenas pelo max-width do CSS)
+        modalImg.src = imageSrc;
+        modalImg.alt = description || 'Foto da igreja';
+        modalImg.style.width = 'auto';
+        modalImg.style.height = 'auto';
+        modalImg.style.maxWidth = '1400px';
+        modalImg.style.display = 'block';
+        
+        console.log('🖼️ Modal aberto - Dimensões:', img.width, 'x', img.height);
+      };
+      img.src = imageSrc;
       
       // Prevenir scroll do body
       document.body.style.overflow = 'hidden';
       
-      console.log('🖼️ Modal aberto:', imageSrc);
+      console.log('🖼️ Abrindo modal:', imageSrc);
     }
 
     // Fechar modal
