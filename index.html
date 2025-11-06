@@ -84,7 +84,7 @@
     <div class="formulario">
       <h2><i class="fas fa-envelope"></i> Entre em Contato</h2>
       <form id="form-contato" data-netlify="true"
-        action="https://formsubmit.co/igrejabatistafontedeaguavivaib@gmail.com" method="POST"> <!-- target="_blank"-->
+        action="https://formsubmit.co/igrejabatistafontedeaguavivaib@gmail.com" method="POST">
         <input type="text" name="nome" id="contact-nome" placeholder="Seu nome" required>
         <input type="email" name="email" id="contact-email" placeholder="Seu e-mail" required>
         <textarea name="mensagem" id="contact-mensagem" placeholder="Sua mensagem" rows="5" required></textarea>
@@ -94,7 +94,6 @@
         <input type="hidden" name="_captcha" value="false">
         <input type="hidden" name="_next" value="https://ibfav.netlify.app/obrigado.html">
         <input type="hidden" name="_error" value="https://ibfav.netlify.app/erro.html">
-
 
         <button type="submit" id="contact-submit-btn">
           <i class="fas fa-paper-plane"></i> Enviar Mensagem
@@ -118,9 +117,9 @@
     <i class="fas fa-cog"></i>
   </a>
 
-  <!-- Modal para imagens -->
+  <!-- Modal para imagens - MELHORADO -->
   <div id="imageModal" class="modal">
-    <span class="close">&times;</span>
+    <span class="close" title="Fechar (ESC)">&times;</span>
     <img class="modal-content" id="modalImage" alt="Imagem ampliada">
   </div>
 
@@ -133,7 +132,6 @@
       authDomain: "ibfav-c9d00.firebaseapp.com",
       projectId: "ibfav-c9d00",
       storageBucket: "ibfav-c9d00.firebasestorage.app",
-      // storageBucket: "ibfav-c9d00.appspot.com",
       messagingSenderId: "666092929823",
       appId: "1:666092929823:web:c17194e606d41da397662a"
     };
@@ -250,9 +248,9 @@
           const img = document.createElement('img');
           img.src = data.url;
           img.alt = data.description || 'Foto da igreja';
-          img.title = data.description || '';
+          img.title = data.description || 'Clique para ampliar';
           img.loading = 'lazy';
-          img.onclick = () => openModal(data.url);
+          img.onclick = () => openModal(data.url, data.description);
           galeriaContainer.appendChild(img);
         });
 
@@ -314,29 +312,43 @@
       }
     }
 
-    // Modal para imagens
-    function openModal(imageSrc) {
+    // Modal para imagens - MELHORADO
+    function openModal(imageSrc, description) {
       const modal = document.getElementById('imageModal');
       const modalImg = document.getElementById('modalImage');
-      modal.style.display = 'block';
+      
+      modal.style.display = 'flex';
       modalImg.src = imageSrc;
+      modalImg.alt = description || 'Foto da igreja';
+      
+      // Prevenir scroll do body
+      document.body.style.overflow = 'hidden';
+      
+      console.log('🖼️ Modal aberto:', imageSrc);
     }
 
     // Fechar modal
-    document.querySelector('.close').onclick = function () {
-      document.getElementById('imageModal').style.display = 'none';
+    function closeModal() {
+      const modal = document.getElementById('imageModal');
+      modal.style.display = 'none';
+      document.body.style.overflow = '';
+      console.log('❌ Modal fechado');
     }
 
+    // Event listener para fechar modal
+    document.querySelector('.close').onclick = closeModal;
+
+    // Fechar ao clicar fora da imagem
     document.getElementById('imageModal').onclick = function (e) {
       if (e.target === this) {
-        this.style.display = 'none';
+        closeModal();
       }
     }
 
     // Fechar modal com ESC
     document.addEventListener('keydown', function (e) {
       if (e.key === 'Escape') {
-        document.getElementById('imageModal').style.display = 'none';
+        closeModal();
       }
     });
 
