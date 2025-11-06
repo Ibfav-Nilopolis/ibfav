@@ -174,8 +174,8 @@
 
     .galeria-grid img {
         width: 100%;
-        max-width: 250px;
-        height: 350px;
+        max-width: 350px;
+        height: 250px;
         object-fit: cover;
         border-radius: 15px;
         transition: all 0.3s;
@@ -368,20 +368,19 @@
         }
 
         .galeria-grid {
-            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            grid-template-columns: repeat(auto-fill, minmax(150px, 1fr));
             gap: 15px;
         }
 
         .galeria-grid img {
+            max-width: 100%;
             height: 200px;
         }
     }
 }
 
 
-
-
-
+/* ===================== PAINEL ADMIN ===================== */
 .admin {
     font-family: 'Poppins', sans-serif;
     min-height: 100vh;
@@ -544,20 +543,21 @@
 
     .items-grid {
         display: grid;
-        grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+        grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
         gap: 20px;
         margin-top: 30px;
+        justify-items: center;
     }
 
     .item-card {
-        width: 100%;
-        max-width: 380px;
         background: white;
         border-radius: 15px;
         padding: 20px;
         box-shadow: 0 5px 15px rgba(0, 0, 0, 0.1);
         border: 1px solid #e9ecef;
         transition: all 0.3s;
+        width: 100%;
+        max-width: 400px;
     }
 
     .item-card:hover {
@@ -567,6 +567,7 @@
 
     .item-image {
         width: 100%;
+        max-width: 100%;
         height: 200px;
         object-fit: cover;
         border-radius: 10px;
@@ -664,15 +665,15 @@
         .items-grid {
             grid-template-columns: 1fr;
         }
+
+        .item-card {
+            max-width: 100%;
+        }
     }
 }
 
 
-
-
-
-
-
+/* ===================== PÁGINA DE ERRO ===================== */
 .erro {
     margin: 0;
     padding: 0;
@@ -723,7 +724,7 @@
 }
 
 
-
+/* ===================== PÁGINA DE OBRIGADO ===================== */
 .obrigado {
     margin: 0;
     padding: 0;
@@ -774,11 +775,7 @@
 }
 
 
-
-
-/* ===================== ADIÇÕES PARA O PAINEL ADMIN ===================== */
-
-/* Cards de informações */
+/* ===================== CARDS DE INFORMAÇÕES ===================== */
 .info-cards {
     display: grid;
     grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
@@ -819,7 +816,7 @@
     margin: 0;
 }
 
-/* Melhorias nos botões */
+/* ===================== MELHORIAS NOS BOTÕES ===================== */
 .btn {
     position: relative;
     overflow: hidden;
@@ -843,14 +840,11 @@
     height: 300px;
 }
 
-/* Animação de loading melhorada */
+/* ===================== ANIMAÇÕES ===================== */
 @keyframes pulse {
-
-    0%,
-    100% {
+    0%, 100% {
         opacity: 1;
     }
-
     50% {
         opacity: 0.5;
     }
@@ -860,33 +854,12 @@
     animation: pulse 1.5s ease-in-out infinite;
 }
 
-/* Melhorias no formulário */
 .form-group input:focus,
 .form-group textarea:focus,
 .form-group select:focus {
     transform: scale(1.02);
 }
 
-/* Responsividade melhorada */
-@media (max-width: 768px) {
-    .info-cards {
-        grid-template-columns: 1fr;
-    }
-
-    .info-card {
-        padding: 20px;
-    }
-
-    .info-card i {
-        font-size: 2rem;
-    }
-
-    .info-card h3 {
-        font-size: 2rem;
-    }
-}
-
-/* Animações suaves */
 .item-card {
     animation: fadeInUp 0.5s ease-out;
 }
@@ -896,14 +869,12 @@
         opacity: 0;
         transform: translateY(20px);
     }
-
     to {
         opacity: 1;
         transform: translateY(0);
     }
 }
 
-/* Melhorias no modal de imagens */
 .modal {
     backdrop-filter: blur(10px);
     animation: fadeIn 0.3s ease-out;
@@ -913,7 +884,6 @@
     from {
         opacity: 0;
     }
-
     to {
         opacity: 1;
     }
@@ -928,14 +898,12 @@
         transform: scale(0.8);
         opacity: 0;
     }
-
     to {
         transform: scale(1);
         opacity: 1;
     }
 }
 
-/* Estilo para mensagens de erro e sucesso melhorado */
 .success-message,
 .error-message {
     animation: slideDown 0.3s ease-out;
@@ -946,14 +914,13 @@
         transform: translateY(-20px);
         opacity: 0;
     }
-
     to {
         transform: translateY(0);
         opacity: 1;
     }
 }
 
-/* Hover effects nos cards */
+/* ===================== HOVER EFFECTS ===================== */
 .item-card {
     position: relative;
 }
@@ -976,12 +943,12 @@
     opacity: 1;
 }
 
-/* Scroll suave */
+/* ===================== SCROLL SUAVE ===================== */
 html {
     scroll-behavior: smooth;
 }
 
-/* Loading skeleton (opcional para melhor UX) */
+/* ===================== LOADING SKELETON ===================== */
 .skeleton {
     background: linear-gradient(90deg, #f0f0f0 25%, #e0e0e0 50%, #f0f0f0 75%);
     background-size: 200% 100%;
@@ -992,7 +959,6 @@ html {
     0% {
         background-position: 200% 0;
     }
-
     100% {
         background-position: -200% 0;
     }
