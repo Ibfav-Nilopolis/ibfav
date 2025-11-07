@@ -322,13 +322,15 @@
         top: 50%;
         left: 50%;
         transform: translate(-50%, -50%);
-        max-width: 90vw;
-        max-height: 90vh;
+        max-width: 95vw;
+        max-height: 95vh;
+        min-width: 60vw;
         width: auto;
         height: auto;
         border-radius: 10px;
         box-shadow: 0 10px 50px rgba(0, 0, 0, 0.5);
         animation: modalZoomIn 0.4s ease-out;
+        object-fit: contain;
     }
 
     .close {
@@ -396,14 +398,9 @@
         }
 
         /* Modal responsivo */
-        .modal {
-            padding: 20px 10px;
-        }
-
         .modal-content {
-            max-width: 95%;
-            width: auto;
-            transform: translateY(-50%);
+            max-width: 95vw;
+            max-height: 85vh;
         }
 
         .close {
