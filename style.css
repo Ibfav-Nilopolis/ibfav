@@ -322,8 +322,8 @@
         top: 50%;
         left: 50%;
         transform: translate(-50%, -50%);
-        max-width: 90vw;
-        max-height: 90vh;
+        max-width: 150vw;
+        max-height: 150vh;
         min-width: 60vw;
         width: auto;
         height: auto;
