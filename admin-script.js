@@ -326,12 +326,13 @@ function getTimeAgo(date) {
 
 // ===================== CRIAR USUÁRIO =====================
 document.getElementById("createUserBtn").addEventListener("click", async () => {
+  const name = document.getElementById("newUserName").value.trim();
   const email = document.getElementById("newUserEmail").value.trim();
   const password = document.getElementById("newUserPassword").value.trim();
   const role = document.getElementById("newUserRole").value;
   const userMessage = document.getElementById("userMessage");
 
-  if (!email || !password) {
+  if (!name || !email || !password) {
     userMessage.innerHTML = "<p class='error-message'>Preencha todos os campos.</p>";
     return;
   }
@@ -357,12 +358,14 @@ document.getElementById("createUserBtn").addEventListener("click", async () => {
     }
 
     await db.collection("users").doc(data.localId).set({
+      name: name,
       email: email,
       role: role,
       createdAt: firebase.firestore.FieldValue.serverTimestamp()
     });
 
     userMessage.innerHTML = "<p class='success-message'>Usuário criado com sucesso!</p>";
+    document.getElementById("newUserName").value = '';
     document.getElementById("newUserEmail").value = '';
     document.getElementById("newUserPassword").value = '';
     loadUsers();
@@ -392,16 +395,120 @@ async function loadUsers() {
       const data = doc.data();
       const card = document.createElement('div');
       card.className = 'item-card';
+      
+      // Badge de role
+      let roleBadge = '';
+      let roleColor = '';
+      switch(data.role) {
+        case 'admin':
+          roleColor = '#ff6b6b';
+          roleBadge = '<i class="fas fa-crown"></i> Administrador';
+          break;
+        case 'editor':
+          roleColor = '#4facfe';
+          roleBadge = '<i class="fas fa-pen"></i> Editor';
+          break;
+        default:
+          roleColor = '#00b894';
+          roleBadge = '<i class="fas fa-user"></i> Usuário';
+      }
+      
       card.innerHTML = `
-        <h4><i class="fas fa-user"></i> ${data.email}</h4>
-        <p><strong>Função:</strong> ${data.role}</p>
-        <p><strong>Criado em:</strong> ${data.createdAt ? new Date(data.createdAt.toDate()).toLocaleDateString('pt-BR') : 'N/A'}</p>
+        <div style="border-left: 4px solid ${roleColor}; padding-left: 15px; margin-bottom: 15px;">
+          <h4><i class="fas fa-user-circle"></i> ${data.name || 'Nome não informado'}</h4>
+          <p><i class="fas fa-envelope"></i> <strong>Email:</strong> ${data.email}</p>
+          <p style="color: ${roleColor};"><strong>${roleBadge}</strong></p>
+          <p><i class="fas fa-calendar-plus"></i> <strong>Criado em:</strong> ${data.createdAt ? new Date(data.createdAt.toDate()).toLocaleDateString('pt-BR') : 'N/A'}</p>
+        </div>
+        <div class="item-actions">
+          <button class="btn btn-success" onclick="editUser('${doc.id}')">
+            <i class="fas fa-edit"></i> Editar
+          </button>
+          <button class="btn btn-danger" onclick="deleteUser('${doc.id}', '${data.email}')">
+            <i class="fas fa-trash"></i> Excluir
+          </button>
+        </div>
       `;
       list.appendChild(card);
     });
   } catch (error) {
     console.error('Erro ao carregar usuários:', error);
     list.innerHTML = "<p class='error-message'>Erro ao carregar usuários.</p>";
+  }
+}
+
+// ===================== EDITAR USUÁRIO =====================
+window.editUser = async function(userId) {
+  try {
+    const doc = await db.collection('users').doc(userId).get();
+    
+    if (!doc.exists) {
+      showMessage('Usuário não encontrado.', 'error');
+      return;
+    }
+
+    const data = doc.data();
+    
+    document.getElementById('edit-user-id').value = userId;
+    document.getElementById('edit-user-name').value = data.name || '';
+    document.getElementById('edit-user-email').value = data.email;
+    document.getElementById('edit-user-role').value = data.role;
+    
+    document.getElementById('editUserModal').style.display = 'block';
+
+  } catch (error) {
+    console.error('Erro ao carregar usuário:', error);
+    showMessage('Erro ao carregar dados do usuário.', 'error');
+  }
+}
+
+window.closeEditUserModal = function() {
+  document.getElementById('editUserModal').style.display = 'none';
+}
+
+window.saveUserEdit = async function() {
+  const userId = document.getElementById('edit-user-id').value;
+  const name = document.getElementById('edit-user-name').value.trim();
+  const role = document.getElementById('edit-user-role').value;
+
+  if (!name) {
+    showMessage('O nome é obrigatório.', 'error');
+    return;
+  }
+
+  try {
+    await db.collection('users').doc(userId).update({
+      name: name,
+      role: role,
+      updatedAt: firebase.firestore.FieldValue.serverTimestamp()
+    });
+
+    showMessage('Usuário atualizado com sucesso!', 'success');
+    closeEditUserModal();
+    loadUsers();
+    loadDashboard();
+
+  } catch (error) {
+    console.error('Erro ao atualizar usuário:', error);
+    showMessage('Erro ao atualizar usuário.', 'error');
+  }
+}
+
+// ===================== DELETAR USUÁRIO =====================
+window.deleteUser = async function(userId, userEmail) {
+  if (!confirm(`Tem certeza que deseja excluir o usuário "${userEmail}"?\n\nEsta ação não pode ser desfeita.`)) {
+    return;
+  }
+
+  try {
+    await db.collection('users').doc(userId).delete();
+    showMessage('Usuário excluído com sucesso!', 'success');
+    loadUsers();
+    loadDashboard();
+
+  } catch (error) {
+    console.error('Erro ao excluir usuário:', error);
+    showMessage('Erro ao excluir usuário.', 'error');
   }
 }
 
