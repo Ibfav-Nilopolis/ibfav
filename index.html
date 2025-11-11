@@ -117,7 +117,7 @@
     <i class="fas fa-cog"></i>
   </a>
 
-  <!-- Modal para imagens - MELHORADO -->
+  <!-- Modal para imagens - AMPLIADO -->
   <div id="imageModal" class="modal">
     <span class="close" title="Fechar (ESC)">&times;</span>
     <img class="modal-content" id="modalImage" alt="Imagem ampliada">
@@ -312,33 +312,18 @@
       }
     }
 
-    // Modal para imagens - MELHORADO E AMPLIADO
+    // Modal para imagens - VERSÃO AMPLIADA
     function openModal(imageSrc, description) {
       const modal = document.getElementById('imageModal');
       const modalImg = document.getElementById('modalImage');
       
-      // Mostrar modal
       modal.style.display = 'block';
+      modalImg.src = imageSrc;
+      modalImg.alt = description || 'Foto da igreja';
       
-      // Criar nova imagem para pegar dimensões reais
-      const img = new Image();
-      img.onload = function() {
-        // Aplicar imagem com tamanho real (limitado apenas pelo max-width do CSS)
-        modalImg.src = imageSrc;
-        modalImg.alt = description || 'Foto da igreja';
-        modalImg.style.width = 'auto';
-        modalImg.style.height = 'auto';
-        modalImg.style.maxWidth = '1400px';
-        modalImg.style.display = 'block';
-        
-        console.log('🖼️ Modal aberto - Dimensões:', img.width, 'x', img.height);
-      };
-      img.src = imageSrc;
-      
-      // Prevenir scroll do body
       document.body.style.overflow = 'hidden';
       
-      console.log('🖼️ Abrindo modal:', imageSrc);
+      console.log('🖼️ Modal aberto:', imageSrc);
     }
 
     // Fechar modal

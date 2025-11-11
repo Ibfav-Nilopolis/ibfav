@@ -207,17 +207,6 @@
       <div class="tab-content" id="photos-tab">
         <h3><i class="fas fa-camera"></i> Upload de Fotos</h3>
 
-        <div class="form-group">
-          <label for="photo-storage-service">Serviço de Armazenamento:</label>
-          <select id="photo-storage-service">
-            <option value="imgur" selected>Imgur (Recomendado - Gratuito e rápido)</option>
-            <option value="firebase">Firebase Storage (Requer configuração de billing)</option>
-          </select>
-          <small style="color: #00b894; display: block; margin-top: 5px;">
-            <i class="fas fa-check-circle"></i> <strong>Imgur</strong> é o melhor para começar - gratuito, rápido e sem configuração adicional
-          </small>
-        </div>
-
         <form id="photo-form">
           <div class="form-group">
             <label>Selecionar Fotos:</label>
@@ -228,6 +217,9 @@
                 Clique para selecionar fotos
               </label>
             </div>
+            <small style="color: #00b894; display: block; margin-top: 5px;">
+              <i class="fas fa-info-circle"></i> Upload gratuito via Imgur
+            </small>
           </div>
 
           <div class="form-group">
@@ -385,6 +377,14 @@
           <input type="email" id="edit-user-email" readonly style="background: #f0f0f0; cursor: not-allowed;">
           <small style="color: #999; display: block; margin-top: 5px;">
             <i class="fas fa-info-circle"></i> O email não pode ser alterado
+          </small>
+        </div>
+
+        <div class="form-group">
+          <label>Nova Senha (deixe em branco para não alterar):</label>
+          <input type="password" id="edit-user-password" placeholder="Digite nova senha (mínimo 6 caracteres)">
+          <small style="color: #999; display: block; margin-top: 5px;">
+            <i class="fas fa-key"></i> Preencha apenas se quiser alterar a senha
           </small>
         </div>
 

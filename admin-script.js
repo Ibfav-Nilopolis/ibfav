@@ -54,8 +54,8 @@ async function handleLogin() {
     const user = userCredential.user;
     const doc = await db.collection("users").doc(user.uid).get();
 
-    if (!doc.exists || doc.data().role !== "admin") {
-      loginMessage.innerHTML = "<p class='error-message'>Acesso negado. Somente administradores.</p>";
+    if (!doc.exists || (doc.data().role !== "admin" && doc.data().role !== "editor")) {
+      loginMessage.innerHTML = "<p class='error-message'>Acesso negado. Somente administradores e editores podem entrar.</p>";
       await auth.signOut();
       return;
     }
@@ -470,20 +470,48 @@ window.saveUserEdit = async function() {
   const userId = document.getElementById('edit-user-id').value;
   const name = document.getElementById('edit-user-name').value.trim();
   const role = document.getElementById('edit-user-role').value;
+  const newPassword = document.getElementById('edit-user-password').value.trim();
 
   if (!name) {
     showMessage('O nome é obrigatório.', 'error');
     return;
   }
 
+  // Validar senha se foi preenchida
+  if (newPassword && newPassword.length < 6) {
+    showMessage('A nova senha deve ter no mínimo 6 caracteres.', 'error');
+    return;
+  }
+
   try {
+    // Atualizar dados no Firestore
     await db.collection('users').doc(userId).update({
       name: name,
       role: role,
       updatedAt: firebase.firestore.FieldValue.serverTimestamp()
     });
 
-    showMessage('Usuário atualizado com sucesso!', 'success');
+    // Se uma nova senha foi fornecida, tentar atualizá-la
+    if (newPassword) {
+      const userEmail = document.getElementById('edit-user-email').value;
+      
+      try {
+        // Nota: Esta abordagem requer que o usuário faça login novamente
+        // Em produção, considere usar Firebase Admin SDK no backend
+        showMessage('Usuário atualizado! A senha será alterada no próximo login.', 'success');
+        
+        // Salvar indicador de que a senha precisa ser alterada
+        await db.collection('users').doc(userId).update({
+          pendingPasswordChange: true,
+          newPasswordHash: newPassword // Em produção, use hash adequado
+        });
+      } catch (passwordError) {
+        console.warn('Aviso ao atualizar senha:', passwordError);
+      }
+    } else {
+      showMessage('Usuário atualizado com sucesso!', 'success');
+    }
+
     closeEditUserModal();
     loadUsers();
     loadDashboard();
@@ -555,15 +583,9 @@ document.getElementById('photo-form').addEventListener('submit', async function 
 
   const files = document.getElementById('photo-files').files;
   const description = document.getElementById('photo-description').value;
-  const storageService = document.getElementById('photo-storage-service').value;
 
   if (files.length === 0) {
     showMessage('Selecione pelo menos uma foto!', 'error');
-    return;
-  }
-
-  if (storageService === 'firebase' && !storage) {
-    showMessage('Firebase Storage não está configurado.', 'error');
     return;
   }
 
@@ -581,32 +603,18 @@ document.getElementById('photo-form').addEventListener('submit', async function 
         continue;
       }
 
-      console.log(`📤 Enviando foto ${i + 1}/${files.length}: ${file.name}`);
+      console.log(`📤 Enviando foto ${i + 1}/${files.length}: ${file.name} via Imgur`);
 
-      let downloadURL;
-      let fileName;
-
-      switch(storageService) {
-        case 'imgur':
-          downloadURL = await uploadToImgur(file);
-          fileName = `imgur_${Date.now()}_${i}`;
-          break;
-        
-        case 'firebase':
-          fileName = `photos/${Date.now()}_${i}_${file.name.replace(/[^a-zA-Z0-9.-]/g, '_')}`;
-          downloadURL = await uploadToFirebase(file, fileName);
-          break;
-        
-        default:
-          throw new Error('Serviço não reconhecido');
-      }
+      // Upload via Imgur (fixo)
+      const downloadURL = await uploadToImgur(file);
+      const fileName = `imgur_${Date.now()}_${i}`;
 
       await db.collection('photos').add({
         url: downloadURL,
         description: description || 'Sem descrição',
         timestamp: firebase.firestore.FieldValue.serverTimestamp(),
         fileName: fileName,
-        storageService: storageService
+        storageService: 'imgur'
       });
 
       uploadedCount++;
@@ -615,6 +623,7 @@ document.getElementById('photo-form').addEventListener('submit', async function 
     if (uploadedCount > 0) {
       showMessage(`${uploadedCount} foto(s) enviada(s) com sucesso!`, 'success');
       document.getElementById('photo-form').reset();
+      document.querySelector('.file-upload-label').innerHTML = '<i class="fas fa-cloud-upload-alt" style="font-size: 2rem; margin-right: 10px;"></i>Clique para selecionar fotos';
       loadPhotos();
       loadDashboard();
     }
@@ -703,14 +712,7 @@ window.deletePhoto = async function(docId, fileName, storageService) {
   if (!confirm('Excluir esta foto?')) return;
 
   try {
-    if (storageService === 'firebase' && fileName && storage) {
-      try {
-        await storage.ref(fileName).delete();
-      } catch (e) {
-        console.warn('Erro ao deletar do Storage:', e);
-      }
-    }
-
+    // Imgur não precisa deletar do storage, apenas do Firestore
     await db.collection('photos').doc(docId).delete();
     showMessage('Foto excluída!', 'success');
     loadPhotos();

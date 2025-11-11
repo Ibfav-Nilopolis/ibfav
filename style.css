@@ -304,7 +304,7 @@
         transform: scale(1.1);
     }
 
-    /* Modal para visualizar imagens - VERSÃO CORRIGIDA SEM DISTORÇÃO */
+    /* Modal para visualizar imagens - VERSÃO AMPLIADA MÁXIMA */
     .modal {
         display: none;
         position: fixed;
@@ -322,8 +322,8 @@
         top: 50%;
         left: 50%;
         transform: translate(-50%, -50%);
-        max-width: 90vw;
-        max-height: 90vh;
+        max-width: 95vw;
+        max-height: 95vh;
         width: auto;
         height: auto;
         border-radius: 10px;
